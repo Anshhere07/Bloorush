@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloorush</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar custom-navbar fixed-top">
+        <div class="navbar-container">
+
+            <!-- Logo -->
+            <div class="logo-text" onclick="reloadPage()">Bloorush</div>
+
+            <!-- Right -->
+            <div class="nav-right">
+
+                <!-- Location -->
+                <div class="location-box" onclick="getLocation()">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span id="locationText">Select Location</span>
+                </div>
+
+                <!-- Account -->
+                <div class="dropdown">
+                    <div class="account-icon" data-toggle="dropdown">
+                        <i class="fas fa-user"></i>
+                    </div>
+
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <a class="dropdown-item" href="#" onclick="openBookings(event)">My Booking</a>
+                        <a class="dropdown-item" href="#" onclick="openLogin(event)">Login</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+    <!-- Booking Modal -->
+    <div class="modal fade" id="bookingModal">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <div class="modal-header border-0 pb-0">
+                    <h4 class="modal-title font-weight-bold" style="color: var(--primary-dark);">My Bookings</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body p-4" id="bookingModalBody">
+                    <!-- Dynamic Content Injected via openBookings() in JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Modal (Login/Signup) -->
+    <div class="modal fade auth-modal" id="loginModal">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content auth-content">
+
+                <div class="auth-header">
+                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                    <h4 class="text-center mb-0" id="authTitle">Welcome Back</h4>
+                    <p class="text-center text-white-50 mb-0 mt-1" id="authSubtitle">Login to continue</p>
+                </div>
+
+                <div class="auth-body p-4">
+                    <!-- Google Auth Button (UI) -->
+                    <button class="btn btn-block google-btn shadow-sm mb-4">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"
+                            alt="Google" width="20">
+                        <span id="googleBtnText">Sign in with Google</span>
+                    </button>
+
+                    <div class="divider text-center mb-4">
+                        <span class="text-muted">OR</span>
+                    </div>
+
+                    <!-- Toggle Name Field for Signup -->
+                    <div class="input-group mb-3 signup-field" style="display: none;">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        </div>
+                        <input type="text" class="form-control" placeholder="Full Name">
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                        </div>
+                        <input type="email" class="form-control" placeholder="Email Address">
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        </div>
+                        <input type="password" class="form-control" placeholder="Password">
+                    </div>
+
+                    <button class="btn auth-submit-btn btn-block shadow-sm" id="authSubmitBtn">Login</button>
+
+                    <div class="text-center mt-3">
+                        <span class="text-muted" id="authFooterText">Don't have an account?</span>
+                        <a href="#" class="font-weight-bold ml-1" id="toggleAuthMode">Sign Up</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div style="position: fixed; top: 100px; right: 20px; z-index: 9999;">
+        <div id="authToast" class="toast hide" data-delay="4000"
+            style="min-width: 250px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+            <div class="toast-header" style="border-radius: 8px 8px 0 0;">
+                <i class="fas fa-bell mr-2" style="color: var(--primary);"></i>
+                <strong class="mr-auto" id="toastTitle">Notification</strong>
+                <button type="button" class="ml-2 mb-1 close" data-dismiss="toast">&times;</button>
+            </div>
+            <div class="toast-body bg-white" id="toastBody" style="border-radius: 0 0 8px 8px; color: #333;">
+                Message goes here.
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Services -->
+    <section class="services-section">
+        <div class="services-container">
+
+            <!-- LEFT: SERVICES WRAPPER CARD -->
+            <div class="services-main-card">
+                <h3 class="services-main-header">Our Services</h3>
+                <div class="services-left">
+
+                    <!-- Service 1: Utensils Cleaning -->
+                    <div class="service-item">
+                        <div class="service-card-wrapper" onclick="this.classList.toggle('flipped')">
+                            <div class="service-card-inner">
+                                <div class="service-card-front">
+                                    <img src="assets/service_utensils_icon.png" alt="Utensils Cleaning">
+                                </div>
+                                <div class="service-card-back">
+                                    <h6>Included</h6>
+                                    <ul>
+                                        <li>Daily utensils</li>
+                                        <li>Plates & bowls</li>
+                                        <li>Sink rinse</li>
+                                        <li>One slab wipe</li>
+                                    </ul>
+                                    <h6>Not Included</h6>
+                                    <ul>
+                                        <li>Burnt vessels</li>
+                                        <li>Pressure lid</li>
+                                        <li>Microwave/gas</li>
+                                        <li>Deep oil</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="add-btn-container service-card" data-name="Utensils Cleaning" data-price="79"
+                                onclick="event.stopPropagation()">
+                                <button class="add-btn shadow-sm" onclick="showCounter(this)">+</button>
+                                <div class="counter-pill shadow-sm" style="display:none;">
+                                    <button onclick="updateCount(this, -1)">-</button>
+                                    <span>1</span>
+                                    <button onclick="updateCount(this, 1)">+</button>
+                                </div>
+                            </div>
+                        </div>
+                        <h6 class="service-title">Utensils Cleaning</h6>
+                        <p class="service-price">₹79</p>
+                    </div>
+
+                    <!-- Service 2: Bathroom Cleaning -->
+                    <div class="service-item">
+                        <div class="service-card-wrapper" onclick="this.classList.toggle('flipped')">
+                            <div class="service-card-inner">
+                                <div class="service-card-front">
+                                    <img src="assets/service_bathroom_icon.png" alt="Bathroom Cleaning">
+                                </div>
+                                <div class="service-card-back">
+                                    <h6>Included</h6>
+                                    <ul>
+                                        <li>Floor scrub</li>
+                                        <li>Toilet bowl</li>
+                                        <li>Mirror wipe</li>
+                                        <li>Wash basin</li>
+                                    </ul>
+                                    <h6>Not Included</h6>
+                                    <ul>
+                                        <li>Tile grouting</li>
+                                        <li>Paint removal</li>
+                                        <li>Plumbing fixes</li>
+                                        <li>Acid washing</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="add-btn-container service-card" data-name="Bathroom Cleaning" data-price="199"
+                                onclick="event.stopPropagation()">
+                                <button class="add-btn shadow-sm" onclick="showCounter(this)">+</button>
+                                <div class="counter-pill shadow-sm" style="display:none;">
+                                    <button onclick="updateCount(this, -1)">-</button>
+                                    <span>1</span>
+                                    <button onclick="updateCount(this, 1)">+</button>
+                                </div>
+                            </div>
+                        </div>
+                        <h6 class="service-title">Bathroom Cleaning</h6>
+                        <p class="service-price">₹199</p>
+                    </div>
+
+                    <!-- Service 3: Mopping & Sweeping -->
+                    <div class="service-item">
+                        <div class="service-card-wrapper" onclick="this.classList.toggle('flipped')">
+                            <div class="service-card-inner">
+                                <div class="service-card-front">
+                                    <img src="assets/service_mopping_icon.png" alt="Mopping & Sweeping">
+                                </div>
+                                <div class="service-card-back">
+                                    <h6>Included</h6>
+                                    <ul>
+                                        <li>Dry sweeping</li>
+                                        <li>Wet mopping</li>
+                                        <li>Floor spots</li>
+                                        <li>Trash empty</li>
+                                    </ul>
+                                    <h6>Not Included</h6>
+                                    <ul>
+                                        <li>Stain scrub</li>
+                                        <li>Machine polish</li>
+                                        <li>Move furniture</li>
+                                        <li>Balcony wash</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="add-btn-container service-card" data-name="Mopping & Sweeping" data-price="99"
+                                onclick="event.stopPropagation()">
+                                <button class="add-btn shadow-sm" onclick="showCounter(this)">+</button>
+                                <div class="counter-pill shadow-sm" style="display:none;">
+                                    <button onclick="updateCount(this, -1)">-</button>
+                                    <span>1</span>
+                                    <button onclick="updateCount(this, 1)">+</button>
+                                </div>
+                            </div>
+                        </div>
+                        <h6 class="service-title">Mopping & Sweeping</h6>
+                        <p class="service-price">₹99</p>
+                    </div>
+
+                    <!-- Service 4: Home Dusting -->
+                    <div class="service-item">
+                        <div class="service-card-wrapper" onclick="this.classList.toggle('flipped')">
+                            <div class="service-card-inner">
+                                <div class="service-card-front">
+                                    <img src="assets/service_dusting_icon.png" alt="Home Dusting">
+                                </div>
+                                <div class="service-card-back">
+                                    <h6>Included</h6>
+                                    <ul>
+                                        <li>Surfaces</li>
+                                        <li>Showpieces</li>
+                                        <li>Tables/chairs</li>
+                                        <li>Window sills</li>
+                                    </ul>
+                                    <h6>Not Included</h6>
+                                    <ul>
+                                        <li>Inside drawers</li>
+                                        <li>Curtain wash</li>
+                                        <li>Chandelier</li>
+                                        <li>Sofa vacuum</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="add-btn-container service-card" data-name="Home Dusting" data-price="149"
+                                onclick="event.stopPropagation()">
+                                <button class="add-btn shadow-sm" onclick="showCounter(this)">+</button>
+                                <div class="counter-pill shadow-sm" style="display:none;">
+                                    <button onclick="updateCount(this, -1)">-</button>
+                                    <span>1</span>
+                                    <button onclick="updateCount(this, 1)">+</button>
+                                </div>
+                            </div>
+                        </div>
+                        <h6 class="service-title">Home Dusting</h6>
+                        <p class="service-price">₹149</p>
+                    </div>
+
+                    <!-- Service 5: Fan Cleaning -->
+                    <div class="service-item">
+                        <div class="service-card-wrapper" onclick="this.classList.toggle('flipped')">
+                            <div class="service-card-inner">
+                                <div class="service-card-front">
+                                    <img src="assets/service_fan_icon.png" alt="Fan Cleaning">
+                                </div>
+                                <div class="service-card-back">
+                                    <h6>Included</h6>
+                                    <ul>
+                                        <li>Blade wiping</li>
+                                        <li>Motor dust</li>
+                                        <li>Canopy wipe</li>
+                                        <li>Dry finish</li>
+                                    </ul>
+                                    <h6>Not Included</h6>
+                                    <ul>
+                                        <li>Motor repair</li>
+                                        <li>Repainting</li>
+                                        <li>High ceiling</li>
+                                        <li>Dismantling</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="add-btn-container service-card" data-name="Fan Cleaning" data-price="49"
+                                onclick="event.stopPropagation()">
+                                <button class="add-btn shadow-sm" onclick="showCounter(this)">+</button>
+                                <div class="counter-pill shadow-sm" style="display:none;">
+                                    <button onclick="updateCount(this, -1)">-</button>
+                                    <span>1</span>
+                                    <button onclick="updateCount(this, 1)">+</button>
+                                </div>
+                            </div>
+                        </div>
+                        <h6 class="service-title">Fan Cleaning</h6>
+                        <p class="service-price">₹49</p>
+                    </div>
+
+                    <!-- Service 6: Window Cleaning -->
+                    <div class="service-item">
+                        <div class="service-card-wrapper" onclick="this.classList.toggle('flipped')">
+                            <div class="service-card-inner">
+                                <div class="service-card-front">
+                                    <img src="assets/service_window_icon.png" alt="Window Cleaning">
+                                </div>
+                                <div class="service-card-back">
+                                    <h6>Included</h6>
+                                    <ul>
+                                        <li>Glass wiping</li>
+                                        <li>Frame dusting</li>
+                                        <li>Inside track</li>
+                                        <li>Paper finish</li>
+                                    </ul>
+                                    <h6>Not Included</h6>
+                                    <ul>
+                                        <li>Outside high</li>
+                                        <li>Heavy washing</li>
+                                        <li>Paint wipe</li>
+                                        <li>Grill scrub</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="add-btn-container service-card" data-name="Window Cleaning" data-price="89"
+                                onclick="event.stopPropagation()">
+                                <button class="add-btn shadow-sm" onclick="showCounter(this)">+</button>
+                                <div class="counter-pill shadow-sm" style="display:none;">
+                                    <button onclick="updateCount(this, -1)">-</button>
+                                    <span>1</span>
+                                    <button onclick="updateCount(this, 1)">+</button>
+                                </div>
+                            </div>
+                        </div>
+                        <h6 class="service-title">Window Cleaning</h6>
+                        <p class="service-price">₹89</p>
+                    </div>
+
+                </div>
+            </div> <!-- End services-main-card -->
+
+            <!-- RIGHT: CART -->
+            <div class="services-right">
+                <div class="cart-header-wrapper">
+                    <h4 class="cart-header-title">Your Cart</h4>
+                    <span class="cart-items-pill" id="cartItemsPill">0 items</span>
+                </div>
+
+                <div class="cart-empty" id="cartEmpty">
+                    <i class="fas fa-shopping-basket"></i>
+                    <p>No services selected yet.</p>
+                </div>
+
+                <div id="cartItems">
+                    <!-- Items injected via JS -->
+                </div>
+
+                <div class="cart-total mt-4 pt-3"
+                    style="border-top: 2px dashed #ddd; display: flex; justify-content: space-between; align-items: center;">
+                    <h5>Total Amount</h5>
+                    <h5 style="color: var(--primary); font-weight: bold;">₹<span id="totalPrice">0</span></h5>
+                </div>
+
+                <button class="checkout-btn" onclick="proceedToCheckout()">Proceed to Checkout</button>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- CHECKOUT SECTION (Hidden by default) -->
+    <section class="checkout-section" id="checkoutSection">
+        <div class="checkout-container">
+            <button class="back-btn" onclick="backToServices()"><i class="fas fa-arrow-left mr-2"></i>Back to
+                Services</button>
+
+            <!-- LEFT 50%: LOGIN -->
+            <div class="checkout-left text-center">
+                <i class="fas fa-lock text-muted mb-3" style="font-size: 40px;"></i>
+                <h4 class="font-weight-bold mb-3">Login to Checkout</h4>
+                <p class="text-muted mb-4">Please log in or sign up to finalize your booking.</p>
+                <button class="btn checkout-btn px-5 py-2 mt-0 w-auto" style="border-radius: 8px;"
+                    onclick="$('#loginModal').modal('show')">Login / Sign Up</button>
+            </div>
+
+            <!-- RIGHT 50%: ORDER SUMMARY -->
+            <div class="checkout-right">
+                <h4 class="font-weight-bold mb-4">Order Summary</h4>
+                <div id="checkoutSummaryItems">
+                    <!-- Items injected via JS -->
+                </div>
+                <div class="cart-total mt-4 pt-3" style="border-top: 2px dashed #ddd;">
+                    <h5>Total Amount</h5>
+                    <h5 style="color: var(--primary); font-weight: bold;">₹<span id="checkoutTotalAmount">0</span></h5>
+                </div>
+                <button class="checkout-btn mt-4">Confirm & Pay</button>
+            </div>
+        </div>
+    </section>
+    <!-- checkout end-->
+
+    <!-- WHY CHOOSE BLOORUSH -->
+    <section class="why-section">
+        <div class="text-center mb-5" style="width: 80%; margin: auto;">
+            <h2 class="font-weight-bold" style="color: var(--primary-dark);">Why Choose Bloorush</h2>
+            <p class="text-muted mt-2" style="font-size: 1.1rem; line-height: 1.6;">Experience premium home services
+                with verified professionals,<br> transparent pricing, and unmatched convenience</p>
+        </div>
+
+        <div class="slider-container">
+            <div class="why-choose-slider">
+                <!-- Orig 6 items -->
+                <div class="why-card">
+                    <i class="fas fa-user-shield"></i>
+                    <h6>Verified Professionals</h6>
+                    <p>Background-checked, highly trained, and deeply trusted cleaning experts.</p>
+                </div>
+                <div class="why-card">
+                    <i class="fas fa-tags"></i>
+                    <h6>Transparent Pricing</h6>
+                    <p>No hidden charges or surprise fees. You literally pay exactly what you see.</p>
+                </div>
+                <div class="why-card">
+                    <i class="fas fa-thumbs-up"></i>
+                    <h6>100% Satisfaction</h6>
+                    <p>We take pride in our service. If you're not happy, we'll re-clean it for free.</p>
+                </div>
+                <div class="why-card">
+                    <i class="fas fa-calendar-check"></i>
+                    <h6>Convenient Booking</h6>
+                    <p>Select your time slot and schedule services seamlessly in just a few clicks.</p>
+                </div>
+                <div class="why-card">
+                    <i class="fas fa-leaf"></i>
+                    <h6>Eco-Friendly Products</h6>
+                    <p>Safe, non-toxic chemicals that protect your family, pets, and the earth.</p>
+                </div>
+                <div class="why-card">
+                    <i class="fas fa-headset"></i>
+                    <h6>24/7 Support</h6>
+                    <p>Our dedicated support team is always here to assist you, whenever you need.</p>
+                </div>
+                <!-- Duplicated 6 items for infinite seamless scroll -->
+                <div class="why-card">
+                    <i class="fas fa-user-shield"></i>
+                    <h6>Verified Professionals</h6>
+                    <p>Background-checked, highly trained, and deeply trusted cleaning experts.</p>
+                </div>
+                <div class="why-card">
+                    <i class="fas fa-tags"></i>
+                    <h6>Transparent Pricing</h6>
+                    <p>No hidden charges or surprise fees. You literally pay exactly what you see.</p>
+                </div>
+                <div class="why-card">
+                    <i class="fas fa-thumbs-up"></i>
+                    <h6>100% Satisfaction</h6>
+                    <p>We take pride in our service. If you're not happy, we'll re-clean it for free.</p>
+                </div>
+                <div class="why-card">
+                    <i class="fas fa-calendar-check"></i>
+                    <h6>Convenient Booking</h6>
+                    <p>Select your time slot and schedule services seamlessly in just a few clicks.</p>
+                </div>
+                <div class="why-card">
+                    <i class="fas fa-leaf"></i>
+                    <h6>Eco-Friendly Products</h6>
+                    <p>Safe, non-toxic chemicals that protect your family, pets, and the earth.</p>
+                </div>
+                <div class="why-card">
+                    <i class="fas fa-headset"></i>
+                    <h6>24/7 Support</h6>
+                    <p>Our dedicated support team is always here to assist you, whenever you need.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- TESTIMONIALS SECTION -->
+    <section class="testimonial-section">
+        <div class="text-center mb-5" style="width: 80%; margin: auto;">
+            <h2 class="font-weight-bold" style="color: var(--primary-dark);">What Our Customers Say</h2>
+            <p class="text-muted mt-2" style="font-size: 1.1rem; line-height: 1.6;">Real reviews from verified
+                households who experienced <br> the Bloorush standard </p>
+        </div>
+
+        <div class="slider-container">
+            <div class="testimonial-slider">
+                <!-- Orig 6 Cards -->
+                <div class="testimonial-card">
+                    <div class="test-user-header">
+                        <div class="test-user-icon"><i class="fas fa-user"></i></div>
+                        <div class="test-user-info">
+                            <h6>Rahul Sharma</h6>
+                            <p class="test-user-date">12 March 2026</p>
+                        </div>
+                    </div>
+                    <div class="test-stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                            class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="test-review-text">"Absolutely brilliant service. The team was on time, highly
+                        professional, and left my bathroom sparkling clean. Highly recommended!"</p>
+                    <div class="test-service-tube">Bathroom Cleaning</div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="test-user-header">
+                        <div class="test-user-icon"><i class="fas fa-user-tie"></i></div>
+                        <div class="test-user-info">
+                            <h6>Priya Patel</h6>
+                            <p class="test-user-date">08 March 2026</p>
+                        </div>
+                    </div>
+                    <div class="test-stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                            class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                    </div>
+                    <p class="test-review-text">"I rely on Bloorush daily for my kitchen chores. They are extremely
+                        thorough with handling fragile plates and very polite."</p>
+                    <div class="test-service-tube">Utensils Cleaning</div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="test-user-header">
+                        <div class="test-user-icon"><i class="fas fa-user-graduate"></i></div>
+                        <div class="test-user-info">
+                            <h6>Amit Singh</h6>
+                            <p class="test-user-date">28 Feb 2026</p>
+                        </div>
+                    </div>
+                    <div class="test-stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                            class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="test-review-text">"Booking is so convenient with transparent pricing. The sweeping team
+                        made sure even hidden corners were fully cleared of dust."</p>
+                    <div class="test-service-tube">Mopping & Sweeping</div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="test-user-header">
+                        <div class="test-user-icon"><i class="fas fa-user-ninja"></i></div>
+                        <div class="test-user-info">
+                            <h6>Neha Verma</h6>
+                            <p class="test-user-date">15 Feb 2026</p>
+                        </div>
+                    </div>
+                    <div class="test-stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                            class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="test-review-text">"My ceiling fans look brand new. No dust fell on the bed because they
+                        were extremely careful and used proper drop cloths!"</p>
+                    <div class="test-service-tube">Fan Cleaning</div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="test-user-header">
+                        <div class="test-user-icon"><i class="fas fa-user-astronaut"></i></div>
+                        <div class="test-user-info">
+                            <h6>Vikram Rao</h6>
+                            <p class="test-user-date">02 Feb 2026</p>
+                        </div>
+                    </div>
+                    <div class="test-stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                            class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="test-review-text">"I have huge glass panels at home and they made them perfectly
+                        streak-free. The eco-friendly solution they used didn't smell harsh."</p>
+                    <div class="test-service-tube">Window Cleaning</div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="test-user-header">
+                        <div class="test-user-icon"><i class="fas fa-user-md"></i></div>
+                        <div class="test-user-info">
+                            <h6>Dr. Anjali Desai</h6>
+                            <p class="test-user-date">25 Jan 2026</p>
+                        </div>
+                    </div>
+                    <div class="test-stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                            class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="test-review-text">"As a doctor, hygiene is my priority. The dusting team was meticulous
+                        and deeply disinfected my living room tables perfectly."</p>
+                    <div class="test-service-tube">Home Dusting</div>
+                </div>
+
+                <!-- Duplicated 6 Cards for Seamless Slider -->
+                <div class="testimonial-card">
+                    <div class="test-user-header">
+                        <div class="test-user-icon"><i class="fas fa-user"></i></div>
+                        <div class="test-user-info">
+                            <h6>Rahul Sharma</h6>
+                            <p class="test-user-date">12 March 2026</p>
+                        </div>
+                    </div>
+                    <div class="test-stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                            class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="test-review-text">"Absolutely brilliant service. The team was on time, highly
+                        professional, and left my bathroom sparkling clean. Highly recommended!"</p>
+                    <div class="test-service-tube">Bathroom Cleaning</div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="test-user-header">
+                        <div class="test-user-icon"><i class="fas fa-user-tie"></i></div>
+                        <div class="test-user-info">
+                            <h6>Priya Patel</h6>
+                            <p class="test-user-date">08 March 2026</p>
+                        </div>
+                    </div>
+                    <div class="test-stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                            class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                    </div>
+                    <p class="test-review-text">"I rely on Bloorush daily for my kitchen chores. They are extremely
+                        thorough with handling fragile plates and very polite."</p>
+                    <div class="test-service-tube">Utensils Cleaning</div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="test-user-header">
+                        <div class="test-user-icon"><i class="fas fa-user-graduate"></i></div>
+                        <div class="test-user-info">
+                            <h6>Amit Singh</h6>
+                            <p class="test-user-date">28 Feb 2026</p>
+                        </div>
+                    </div>
+                    <div class="test-stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                            class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="test-review-text">"Booking is so convenient with transparent pricing. The sweeping team
+                        made sure even hidden corners were fully cleared of dust."</p>
+                    <div class="test-service-tube">Mopping & Sweeping</div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="test-user-header">
+                        <div class="test-user-icon"><i class="fas fa-user-ninja"></i></div>
+                        <div class="test-user-info">
+                            <h6>Neha Verma</h6>
+                            <p class="test-user-date">15 Feb 2026</p>
+                        </div>
+                    </div>
+                    <div class="test-stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                            class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="test-review-text">"My ceiling fans look brand new. No dust fell on the bed because they
+                        were extremely careful and used proper drop cloths!"</p>
+                    <div class="test-service-tube">Fan Cleaning</div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="test-user-header">
+                        <div class="test-user-icon"><i class="fas fa-user-astronaut"></i></div>
+                        <div class="test-user-info">
+                            <h6>Vikram Rao</h6>
+                            <p class="test-user-date">02 Feb 2026</p>
+                        </div>
+                    </div>
+                    <div class="test-stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                            class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="test-review-text">"I have huge glass panels at home and they made them perfectly
+                        streak-free. The eco-friendly solution they used didn't smell harsh."</p>
+                    <div class="test-service-tube">Window Cleaning</div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="test-user-header">
+                        <div class="test-user-icon"><i class="fas fa-user-md"></i></div>
+                        <div class="test-user-info">
+                            <h6>Dr. Anjali Desai</h6>
+                            <p class="test-user-date">25 Jan 2026</p>
+                        </div>
+                    </div>
+                    <div class="test-stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                            class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="test-review-text">"As a doctor, hygiene is my priority. The dusting team was meticulous
+                        and deeply disinfected my living room tables perfectly."</p>
+                    <div class="test-service-tube">Home Dusting</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HOW BLOORUSH WORKS -->
+    <section class="how-works-section">
+        <div class="text-center mb-5" style="width: 80%; margin: auto;">
+            <h2 class="font-weight-bold" style="color: var(--primary-dark);">How Bloorush Works</h2>
+            <h5 class="font-weight-bold" style="color: var(--primary-dark);">Simple. Fast. Reliable.</h5>
+            <p class="text-muted mt-2" style="font-size: 1.1rem; line-height: 1.6;">Your premium home service is just
+                three simple steps away.<br>We make booking seamless, fast, and completely reliable.</p>
+        </div>
+
+        <div class="how-works-container">
+            <!-- Step 1 -->
+            <div class="how-card">
+                <div class="how-card-header">
+                    <span class="how-step-badge">Step 1</span>
+                    <div class="how-icon-tube"><i class="fas fa-hand-pointer"></i></div>
+                </div>
+                <h5>Choose Service</h5>
+                <p>Select the cleaning or helper task you need from our wide variety of premium services.</p>
+            </div>
+
+            <!-- Arrow -->
+            <i class="fas fa-chevron-right how-arrow"></i>
+
+            <!-- Step 2 -->
+            <div class="how-card">
+                <div class="how-card-header">
+                    <span class="how-step-badge">Step 2</span>
+                    <div class="how-icon-tube"><i class="fab fa-whatsapp"></i></div>
+                </div>
+                <h5>WhatsApp Us</h5>
+                <p>Click the button to confirm your booking instantly via WhatsApp with our support team.</p>
+            </div>
+
+            <!-- Arrow -->
+            <i class="fas fa-chevron-right how-arrow"></i>
+
+            <!-- Step 3 -->
+            <div class="how-card">
+                <div class="how-card-header">
+                    <span class="how-step-badge">Step 3</span>
+                    <div class="how-icon-tube"><i class="fas fa-couch"></i></div>
+                </div>
+                <h5>Relax</h5>
+                <p>A verified Bloorush helper arrives exactly at your door in 10 mins to handle perfectly everything.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER SECTION -->
+    <footer class="footer-section">
+        <div class="footer-container">
+            <!-- Col 1: Brand -->
+            <div class="footer-col">
+                <h3 class="footer-brand font-weight-bold">Bloorush</h3>
+                <p class="footer-text">Your trusted partner for professional home services in India. Quality service,
+                    verified professionals, hassle-free booking.</p>
+                <div class="footer-socials">
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+
+            <!-- Col 2: Quick Links -->
+            <div class="footer-col">
+                <h5 class="footer-heading">Quick Links</h5>
+                <ul class="footer-links">
+                    <li><a href="javascript:location.reload()">Home</a></li>
+                    <li><a href="https://bloorush.in/" target="_blank">About Us</a></li>
+                    <li><a href="https://wa.me/918010687985" target="_blank">Contact</a></li>
+                </ul>
+            </div>
+
+            <!-- Col 3: Support -->
+            <div class="footer-col">
+                <h5 class="footer-heading">Support</h5>
+                <ul class="footer-links">
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms & Conditions</a></li>
+                </ul>
+            </div>
+
+            <!-- Col 4: Contact Us -->
+            <div class="footer-col">
+                <h5 class="footer-heading">Contact Us</h5>
+                <ul class="footer-contact">
+                    <li><i class="fas fa-map-marker-alt" style="color:var(--primary);"></i> Nagpur, Maharashtra, India
+                    </li>
+                    <li><i class="fab fa-whatsapp" style="color:var(--primary);"></i> <a
+                            href="https://wa.me/918010687985">+91-8010687985</a></li>
+                    <li><i class="fas fa-envelope" style="color:var(--primary);"></i> <a
+                            href="mailto:helpdesk@bloorush.in">helpdesk@bloorush.in</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 Bloorush. All rights reserved.</p>
+            <div class="footer-bottom-links">
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+                <a href="#">Contact</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JS (IMPORTANT ORDER) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!-- Custom JS -->
+    <script src="script.js"></script>
+
+</body>
+
+</html>
