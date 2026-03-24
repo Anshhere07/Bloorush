@@ -40,9 +40,9 @@
                         <i class="fas fa-user"></i>
                     </div>
 
-                    <div class="dropdown-menu dropdown-menu-right">
-                        <a class="dropdown-item" href="#" onclick="openBookings(event)">My Booking</a>
-                        <a class="dropdown-item" href="#" onclick="openLogin(event)">Login</a>
+                    <div class="dropdown-menu dropdown-menu-right" id="navbarAuthLinks">
+                        <!-- Links injected dynamically via JS -->
+                        <a class="dropdown-item" href="#" onclick="openLogin(event)">Login / Register</a>
                     </div>
                 </div>
 
@@ -50,16 +50,16 @@
         </div>
     </nav>
 
-    <!-- Booking Modal -->
+    <!-- BOOKING HISTORY MODAL (PERSISTENT DATA TABLE) -->
     <div class="modal fade" id="bookingModal">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-                <div class="modal-header border-0 pb-0">
-                    <h4 class="modal-title font-weight-bold" style="color: var(--primary-dark);">My Bookings</h4>
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+                <div class="modal-header border-0 bg-light px-4 py-3 align-items-center">
+                    <h5 class="modal-title font-weight-bold" style="color: var(--primary-dark);"><i class="fas fa-history text-primary mr-2"></i>My Bookings</h5>
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body p-4" id="bookingModalBody">
-                    <!-- Dynamic Content Injected via openBookings() in JS -->
+                    <!-- Dynamic Table Injected Here via openBookings() -->
                 </div>
             </div>
         </div>
@@ -412,13 +412,28 @@
             <button class="back-btn" onclick="backToServices()"><i class="fas fa-arrow-left mr-2"></i>Back to
                 Services</button>
 
-            <!-- LEFT 50%: LOGIN -->
-            <div class="checkout-left text-center">
-                <i class="fas fa-lock text-muted mb-3" style="font-size: 40px;"></i>
-                <h4 class="font-weight-bold mb-3">Login to Checkout</h4>
-                <p class="text-muted mb-4">Please log in or sign up to finalize your booking.</p>
-                <button class="btn checkout-btn px-5 py-2 mt-0 w-auto" style="border-radius: 8px;"
-                    onclick="$('#loginModal').modal('show')">Login / Sign Up</button>
+            <!-- LEFT 50%: LOGIN OR MAID ANIMATION -->
+            <div class="checkout-left text-center" style="display: flex; flex-direction: column; justify-content: center;">
+                <!-- State 1: Not Logged In -->
+                <div id="checkoutLoginState">
+                    <i class="fas fa-lock text-muted mb-3" style="font-size: 40px;"></i>
+                    <h4 class="font-weight-bold mb-3">Login to Checkout</h4>
+                    <p class="text-muted mb-4">Please log in or sign up to finalize your booking.</p>
+                    <button class="btn checkout-btn px-5 py-2 mt-0 w-auto" style="border-radius: 8px;"
+                        onclick="$('#loginModal').modal('show')">Login / Sign Up</button>
+                </div>
+
+                <!-- State 2: Logged In (Animated Maid) -->
+                <div id="checkoutLoggedState" style="display: none; position: relative;">
+                    <div class="maid-animation" style="margin-bottom: 30px;">
+                        <span style="font-size: 100px; display: inline-block; position: relative; animation: floatMaid 3s ease-in-out infinite;">
+                            🧹
+                            <i class="fas fa-sparkles" style="position: absolute; top: -15px; right: -25px; font-size: 30px; color: #ffc107; animation: pulseSparkle 1.5s infinite alternate;"></i>
+                        </span>
+                    </div>
+                    <h3 class="font-weight-bold mb-2">Ready, <span id="checkoutUserName" style="color: var(--primary);">User</span>!</h3>
+                    <p class="text-muted" style="font-size: 1.1rem; line-height: 1.6;">Our verified professionals are eagerly waiting.<br>Just confirm your payment to book your slot.</p>
+                </div>
             </div>
 
             <!-- RIGHT 50%: ORDER SUMMARY -->
@@ -431,7 +446,7 @@
                     <h5>Total Amount</h5>
                     <h5 style="color: var(--primary); font-weight: bold;">₹<span id="checkoutTotalAmount">0</span></h5>
                 </div>
-                <button class="checkout-btn mt-4">Confirm & Pay</button>
+                <button id="confirmPayBtn" class="checkout-btn mt-4" onclick="openPaymentOptions()">Confirm & Pay</button>
             </div>
         </div>
     </section>
@@ -832,9 +847,166 @@
         </div>
     </footer>
 
+
+    <!-- PAYMENT OPTIONS MODAL -->
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+                <div class="modal-header border-0 bg-light px-4 py-3 align-items-center">
+                    <h5 class="modal-title font-weight-bold" style="color: var(--primary-dark);"><i class="fas fa-shield-alt text-success mr-2"></i>Secure Payment</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" style="font-size: 1.5rem;">&times;</span>
+                    </button>
+                </div>
+                <div class="payment-modal-body">
+                    <!-- Sidebar -->
+                    <div class="payment-sidebar">
+                        <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                            <a class="nav-link active" id="v-pills-upi-tab" data-toggle="pill" href="#v-pills-upi" role="tab" aria-selected="true">
+                                <i class="fas fa-mobile-alt"></i> UPI
+                            </a>
+                            <a class="nav-link" id="v-pills-card-tab" data-toggle="pill" href="#v-pills-card" role="tab" aria-selected="false">
+                                <i class="far fa-credit-card"></i> Credit/Debit
+                            </a>
+                            <a class="nav-link" id="v-pills-netbanking-tab" data-toggle="pill" href="#v-pills-netbanking" role="tab" aria-selected="false">
+                                <i class="fas fa-university"></i> Net Banking
+                            </a>
+                            <a class="nav-link" id="v-pills-wallet-tab" data-toggle="pill" href="#v-pills-wallet" role="tab" aria-selected="false">
+                                <i class="fas fa-wallet"></i> Wallets
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Content -->
+                    <div class="payment-content">
+                        <div class="tab-content" id="v-pills-tabContent">
+                            
+                            <!-- UPI TAB -->
+                            <div class="tab-pane fade show active" id="v-pills-upi" role="tabpanel">
+                                <h6 class="font-weight-bold mb-3">Pay via UPI Apps</h6>
+                                <div class="upi-apps">
+                                    <div class="upi-app selected" onclick="document.querySelectorAll('.upi-app').forEach(el=>el.classList.remove('selected')); this.classList.add('selected');">
+                                        <i class="fab fa-google" style="color:#DB4437;"></i><span>GPay</span>
+                                    </div>
+                                    <div class="upi-app" onclick="document.querySelectorAll('.upi-app').forEach(el=>el.classList.remove('selected')); this.classList.add('selected');">
+                                        <i class="fas fa-rupee-sign" style="color:#6739B7;"></i><span>PhonePe</span>
+                                    </div>
+                                    <div class="upi-app" onclick="document.querySelectorAll('.upi-app').forEach(el=>el.classList.remove('selected')); this.classList.add('selected');">
+                                        <i class="fas fa-wallet" style="color:#00BAF2;"></i><span>Paytm</span>
+                                    </div>
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label class="text-muted" style="font-size: 0.9rem;">Or Enter Any UPI ID</label>
+                                    <input type="text" class="payment-input" placeholder="e.g. yourname@ybl" value="demo@ybl">
+                                </div>
+                            </div>
+                            
+                            <!-- CARD TAB -->
+                            <div class="tab-pane fade" id="v-pills-card" role="tabpanel">
+                                <h6 class="font-weight-bold mb-3">Pay via Credit / Debit Card</h6>
+                                <input type="text" class="payment-input" placeholder="Card Number" value="4444 4444 4242 4242">
+                                <div class="d-flex" style="gap: 15px;">
+                                    <input type="text" class="payment-input" placeholder="MM/YY" value="12/28">
+                                    <input type="password" class="payment-input" placeholder="CVV" value="123">
+                                </div>
+                                <input type="text" class="payment-input mb-0" placeholder="Cardholder Name" value="Bloorush Customer">
+                            </div>
+
+                            <!-- NET BANKING TAB -->
+                            <div class="tab-pane fade" id="v-pills-netbanking" role="tabpanel">
+                                <h6 class="font-weight-bold mb-3">Select Your Bank</h6>
+                                <select class="payment-input mb-0">
+                                    <option>HDFC Bank</option>
+                                    <option>State Bank of India (SBI)</option>
+                                    <option>ICICI Bank</option>
+                                    <option>Axis Bank</option>
+                                    <option>Kotak Mahindra</option>
+                                    <option>Other Banks...</option>
+                                </select>
+                            </div>
+
+                            <!-- WALLETS TAB -->
+                            <div class="tab-pane fade" id="v-pills-wallet" role="tabpanel">
+                                <h6 class="font-weight-bold mb-3">Select Wallet</h6>
+                                <div class="upi-apps mb-0">
+                                    <div class="upi-app selected" style="width: 100px;">
+                                        <i class="fab fa-amazon" style="color:#FF9900;"></i><span>Amazon Pay</span>
+                                    </div>
+                                    <div class="upi-app" style="width: 100px;">
+                                        <i class="fas fa-bolt" style="color:#F37021;"></i><span>Freecharge</span>
+                                    </div>
+                                    <div class="upi-app" style="width: 100px;">
+                                        <i class="fas fa-comment-dollar" style="color:#003466;"></i><span>Mobikwik</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top px-4 py-3 bg-white d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted d-block" style="font-size: 0.85rem;">Total Payable Amount</span>
+                        <h4 class="font-weight-bold mb-0" style="color: var(--primary);">₹<span id="paymentModalTotalAmount">0</span></h4>
+                    </div>
+                    <button class="btn btn-primary px-5 py-2 font-weight-bold" style="border-radius: 8px; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(56, 182, 255, 0.3);" onclick="processPaymentSimulation(this)">
+                        Pay Securely <i class="fas fa-lock ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUCCESS RECEIPT MODAL -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 receipt-card shadow-lg" style="border-radius: 16px; overflow: hidden;">
+                <div class="modal-body p-0">
+                    <div class="receipt-header text-center p-4" style="background: #e8f5e9; border-bottom: 2px dashed #c8e6c9;">
+                        <div class="success-checkmark mb-3" style="animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+                            <i class="fas fa-check-circle" style="font-size: 60px; color: #2e7d32;"></i>
+                        </div>
+                        <h4 class="font-weight-bold" style="color: #2e7d32;">Service Booked Successfully!</h4>
+                        <p class="mb-0 text-muted">Thank you for choosing Bloorush.</p>
+                    </div>
+                    <div class="receipt-body p-4 bg-white">
+                        <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
+                            <span class="text-muted">Booking ID</span>
+                            <span class="font-weight-bold" id="receiptBookingId">#BR-000000</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
+                            <span class="text-muted">Customer</span>
+                            <span class="font-weight-bold" id="receiptCustomerName">Name</span>
+                        </div>
+                        
+                        <h6 class="font-weight-bold mt-4 mb-3 text-muted">Services Booked:</h6>
+                        <div id="receiptItemsList">
+                            <!-- Items Injected Dynamically -->
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4 pt-3" style="border-top: 2px dashed #ddd;">
+                            <h5 class="font-weight-bold">Amount Paid</h5>
+                            <h5 class="font-weight-bold" style="color: var(--primary);">₹<span id="receiptTotalAmount">0</span></h5>
+                        </div>
+                    </div>
+                    <div class="receipt-footer text-center p-4" style="background: #f8f9fa;">
+                        <p class="text-muted mb-3" style="font-size: 0.95rem;">Need help with your booking?</p>
+                        <a href="tel:8010687985" class="btn btn-primary btn-block py-3 font-weight-bold" style="border-radius: 8px; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(56, 182, 255, 0.3);">
+                            <i class="fas fa-phone-alt mr-2"></i> Call Support: 8010687985
+                        </a>
+                        <button class="btn btn-link text-muted mt-3" onclick="location.reload();">Close & Return to Home</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- JS (IMPORTANT ORDER) -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Razorpay Checkout Integration -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
