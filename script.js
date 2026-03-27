@@ -48,7 +48,7 @@ function openLogin(e) {
 
 // OPEN BOOKINGS (TABULAR UI)
 function openBookings(e) {
-    if(e) e.preventDefault();
+    if (e) e.preventDefault();
 
     const body = document.getElementById('bookingModalBody');
     body.innerHTML = ''; // Clear previous content
@@ -68,7 +68,7 @@ function openBookings(e) {
                 </thead>
                 <tbody>
         `;
-        
+
         userBookings.forEach(booking => {
             htmlContent += `
                 <tr>
@@ -83,7 +83,7 @@ function openBookings(e) {
                 </tr>
             `;
         });
-        
+
         htmlContent += '</tbody></table></div>';
         body.innerHTML = htmlContent;
     } else {
@@ -105,14 +105,14 @@ function openBookings(e) {
 
 function viewBill(bookingId) {
     const booking = userBookings.find(b => b.id === bookingId);
-    if(booking) {
+    if (booking) {
         $('#bookingModal').modal('hide');
-        
+
         // Repopulate specific receipt DOM
         document.getElementById('receiptBookingId').innerText = booking.id;
         document.getElementById('receiptCustomerName').innerText = currentUser ? currentUser.name : 'Bloorush Customer';
         document.getElementById('receiptTotalAmount').innerText = booking.total;
-        
+
         const itemsListHtml = booking.items.map(item => `
             <div class="receipt-item d-flex justify-content-between mb-2">
                 <span>${item.name} (x${item.count})</span>
@@ -120,7 +120,7 @@ function viewBill(bookingId) {
             </div>
         `).join('');
         document.getElementById('receiptItemsList').innerHTML = itemsListHtml;
-        
+
         $('#successModal').modal('show');
     }
 }
@@ -132,7 +132,7 @@ async function logActivityToSheet(name, email, activityType) {
         console.warn("Google Sheet Web App URL not configured. Activity not logged.");
         return;
     }
-    
+
     try {
         const url = new URL(GOOGLE_SHEET_WEBAPP_URL);
         url.searchParams.append("name", name || "Unknown");
@@ -159,18 +159,18 @@ let userBookings = JSON.parse(localStorage.getItem('bloorush_userBookings')) || 
 document.addEventListener("DOMContentLoaded", () => {
     updateNavbarUI();
     updateCheckoutUI();
-    
+
     // Attempt to restore persistent location securely
     const savedLocation = localStorage.getItem("bloorush_userLocation");
-    if(savedLocation) {
+    if (savedLocation) {
         document.getElementById("locationText").innerText = savedLocation;
     }
 });
 
 function updateNavbarUI() {
     const links = document.getElementById('navbarAuthLinks');
-    if(links) {
-        if(currentUser) {
+    if (links) {
+        if (currentUser) {
             links.innerHTML = `
                 <a class="dropdown-item" href="#" onclick="openBookings(event)"><i class="fas fa-history mr-2" style="color:var(--primary);"></i>My Bookings</a>
                 <a class="dropdown-item text-danger" href="#" onclick="logoutUser(event)"><i class="fas fa-sign-out-alt mr-2"></i>Logout</a>
@@ -184,21 +184,21 @@ function updateNavbarUI() {
 }
 
 function logoutUser(e) {
-    if(e) e.preventDefault();
+    if (e) e.preventDefault();
     localStorage.removeItem('bloorush_currentUser');
     location.reload();
 }
 
 function updateCheckoutUI() {
     if (currentUser) {
-        if(document.getElementById('checkoutLoginState')) document.getElementById('checkoutLoginState').style.display = 'none';
-        if(document.getElementById('checkoutLoggedState')) {
+        if (document.getElementById('checkoutLoginState')) document.getElementById('checkoutLoginState').style.display = 'none';
+        if (document.getElementById('checkoutLoggedState')) {
             document.getElementById('checkoutLoggedState').style.display = 'block';
             document.getElementById('checkoutUserName').innerText = currentUser.name;
         }
     } else {
-        if(document.getElementById('checkoutLoggedState')) document.getElementById('checkoutLoggedState').style.display = 'none';
-        if(document.getElementById('checkoutLoginState')) document.getElementById('checkoutLoginState').style.display = 'block';
+        if (document.getElementById('checkoutLoggedState')) document.getElementById('checkoutLoggedState').style.display = 'none';
+        if (document.getElementById('checkoutLoginState')) document.getElementById('checkoutLoginState').style.display = 'block';
     }
 }
 
@@ -286,7 +286,7 @@ document.getElementById('authSubmitBtn').addEventListener('click', function (e) 
             localStorage.setItem('bloorush_currentUser', JSON.stringify(currentUser));
             updateNavbarUI();
             updateCheckoutUI();
-            
+
             showToast("Success", "Successfully logged in! Welcome back, " + user.name, true);
             logActivityToSheet(user.name, user.email, "Logged In via Email");
             $('#loginModal').modal('hide');
@@ -307,13 +307,13 @@ document.getElementById('authSubmitBtn').addEventListener('click', function (e) 
         }
 
         saveUser({ name: nameField, email: emailField, password: passwordField });
-        
+
         // Auto-login the user immediately upon sign-up for seamless checkout
         currentUser = { name: nameField, email: emailField };
         localStorage.setItem('bloorush_currentUser', JSON.stringify(currentUser));
         updateNavbarUI();
         updateCheckoutUI();
-        
+
         showToast("Success", "Successfully signed up and logged in!", true);
         logActivityToSheet(nameField, emailField, "Signed Up via Email");
         $('#loginModal').modal('hide');
@@ -373,11 +373,11 @@ function fetchGoogleUserProfile(accessToken) {
         .then(res => res.json())
         .then(userInfo => {
             console.log("Google User Info:", userInfo);
-            
+
             // Set session state and update DOM securely
             currentUser = { name: userInfo.name, email: userInfo.email };
             updateCheckoutUI();
-            
+
             alert(`Successfully logged in as: ${userInfo.name}\nEmail: ${userInfo.email}`);
             logActivityToSheet(userInfo.name, userInfo.email, "Logged In via Google");
 
@@ -399,20 +399,20 @@ let cart = {};
 function showCounter(btn) {
     const container = btn.parentElement;
     const counterPill = container.querySelector('.counter-pill');
-    
+
     btn.style.display = 'none';
     counterPill.style.display = 'flex';
-    
+
     const card = container.closest(".service-card");
     const name = card.getAttribute("data-name");
     const price = parseInt(card.getAttribute("data-price"));
-    
-    if(!cart[name]) {
+
+    if (!cart[name]) {
         cart[name] = { count: 1, price: price };
     } else {
         cart[name].count++;
     }
-    
+
     counterPill.querySelector('span').innerText = cart[name].count;
     updateCartUI();
 }
@@ -439,7 +439,7 @@ function updateCount(btn, change) {
     } else {
         cart[name] = { count, price };
     }
-    
+
     span.innerText = count;
     updateCartUI();
 }
@@ -457,7 +457,7 @@ function updateCartUI() {
     if (Object.keys(cart).length === 0) {
         cartEmpty.style.display = "block";
         totalPrice.innerText = "0";
-        if(cartItemsPill) cartItemsPill.innerText = "0 items";
+        if (cartItemsPill) cartItemsPill.innerText = "0 items";
         return;
     }
 
@@ -477,7 +477,7 @@ function updateCartUI() {
         let itemTotal = c.count * c.price;
         total += itemTotal;
         totalItems += c.count;
-        
+
         const imgSrc = images[item] || "service_utensils_icon.png";
 
         cartItems.innerHTML += `
@@ -503,13 +503,13 @@ function updateCartUI() {
     }
 
     totalPrice.innerText = total;
-    if(cartItemsPill) cartItemsPill.innerText = totalItems + (totalItems === 1 ? " item" : " items");
+    if (cartItemsPill) cartItemsPill.innerText = totalItems + (totalItems === 1 ? " item" : " items");
 }
 
 function updateCountFromCart(name, change) {
-    if(cart[name]) {
+    if (cart[name]) {
         cart[name].count += change;
-        if(cart[name].count <= 0) {
+        if (cart[name].count <= 0) {
             delete cart[name];
         }
     }
@@ -524,8 +524,8 @@ function syncFrontEndCounters() {
         const addBtn = container.querySelector('.add-btn');
         const pill = container.querySelector('.counter-pill');
         const span = pill.querySelector('span');
-        
-        if(cart[name]) {
+
+        if (cart[name]) {
             addBtn.style.display = 'none';
             pill.style.display = 'flex';
             span.innerText = cart[name].count;
@@ -540,31 +540,31 @@ function syncFrontEndCounters() {
 // CHECKOUT LOGIC
 function proceedToCheckout() {
     if (Object.keys(cart).length === 0) {
-        if(typeof showToast === "function") showToast("Error", "Your cart is empty!", false);
+        if (typeof showToast === "function") showToast("Error", "Your cart is empty!", false);
         return;
     }
-    
+
     // Hide Services, Show Checkout
     document.querySelector('.services-section').style.display = 'none';
-    if(document.querySelector('.why-section')) document.querySelector('.why-section').style.display = 'none';
-    if(document.querySelector('.how-works-section')) document.querySelector('.how-works-section').style.display = 'none';
-    if(document.querySelector('.testimonial-section')) document.querySelector('.testimonial-section').style.display = 'none';
-    
+    if (document.querySelector('.why-section')) document.querySelector('.why-section').style.display = 'none';
+    if (document.querySelector('.how-works-section')) document.querySelector('.how-works-section').style.display = 'none';
+    if (document.querySelector('.testimonial-section')) document.querySelector('.testimonial-section').style.display = 'none';
+
     document.getElementById('checkoutSection').style.display = 'block';
-    
+
     // Refresh Dynamic View State dynamically
     updateCheckoutUI();
-    
+
     // Populate Order Summary in Checkout
     const summaryContainer = document.getElementById('checkoutSummaryItems');
     summaryContainer.innerHTML = '';
-    
+
     let total = 0;
     for (let item in cart) {
         let c = cart[item];
         let itemTotal = c.count * c.price;
         total += itemTotal;
-        
+
         summaryContainer.innerHTML += `
             <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
                 <span class="text-muted" style="font-weight: 500;">${item} (x${c.count})</span>
@@ -572,7 +572,7 @@ function proceedToCheckout() {
             </div>
         `;
     }
-    
+
     document.getElementById('checkoutTotalAmount').innerText = total;
 }
 
@@ -580,10 +580,10 @@ function backToServices() {
     // Hide Checkout, Show Services
     document.getElementById('checkoutSection').style.display = 'none';
     document.querySelector('.services-section').style.display = 'block';
-    if(document.querySelector('.why-section')) document.querySelector('.why-section').style.display = 'block';
-    if(document.querySelector('.how-works-section')) document.querySelector('.how-works-section').style.display = 'block';
-    if(document.querySelector('.testimonial-section')) document.querySelector('.testimonial-section').style.display = 'block';
-    
+    if (document.querySelector('.why-section')) document.querySelector('.why-section').style.display = 'block';
+    if (document.querySelector('.how-works-section')) document.querySelector('.how-works-section').style.display = 'block';
+    if (document.querySelector('.testimonial-section')) document.querySelector('.testimonial-section').style.display = 'block';
+
     // Scroll smoothly to services
     document.querySelector('.services-section').scrollIntoView({ behavior: 'smooth' });
 }
@@ -591,12 +591,12 @@ function backToServices() {
 // PAYMENT OPTIONS MODAL & SUCCESS RECEIPT ARCHITECTURE
 function openPaymentOptions() {
     if (!currentUser) {
-        if(typeof showToast === "function") showToast("Authentication Required", "Please log in using the form on the left to confirm and pay securely.", false);
+        if (typeof showToast === "function") showToast("Authentication Required", "Please log in using the form on the left to confirm and pay securely.", false);
         return;
     }
-    
+
     if (Object.keys(cart).length === 0) {
-        if(typeof showToast === "function") showToast("Empty Cart", "Please add services to your cart first.", false);
+        if (typeof showToast === "function") showToast("Empty Cart", "Please add services to your cart first.", false);
         return;
     }
 
@@ -604,10 +604,10 @@ function openPaymentOptions() {
     for (let item in cart) {
         totalAmount += cart[item].count * cart[item].price;
     }
-    
+
     // Inject Total into Payment Modal Button
     document.getElementById('paymentModalTotalAmount').innerText = totalAmount;
-    
+
     // Show Interactive Modal
     $('#paymentModal').modal('show');
 }
@@ -617,14 +617,14 @@ function processPaymentSimulation(btn) {
     let totalAmount = document.getElementById('paymentModalTotalAmount').innerText;
 
     // Detect if UPI Tab is Active for Native Deep Linking
-    if(document.getElementById('v-pills-upi').classList.contains('active')) {
+    if (document.getElementById('v-pills-upi').classList.contains('active')) {
         // Trigger actual native intent
-        window.location.href = `upi://pay?pa=917700969697@upi&pn=Bloorush&am=${totalAmount}&cu=INR`;
-        
+        window.location.href = `upi://pay?pa=8707665217@ptsbi&pn=Bloorush&am=${totalAmount}&cu=INR`;
+
         btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Verifying Bank App...';
         btn.disabled = true;
         btn.style.opacity = '0.8';
-        
+
         // Wait longer (5 seconds) to pretend the user is executing it in their external UPI app
         setTimeout(() => {
             finalizePaymentSuccess(btn, originalText);
@@ -646,11 +646,11 @@ function finalizePaymentSuccess(btn, originalText) {
     btn.innerHTML = '<i class="fas fa-check-circle"></i> Payment Successful';
     btn.style.backgroundColor = '#28a745'; // Green Success Mode
     btn.style.borderColor = '#28a745';
-    
+
     setTimeout(() => {
         $('#paymentModal').modal('hide');
         completeBooking("pay_" + Math.random().toString(36).substring(2, 10));
-        
+
         // Return button state
         btn.innerHTML = originalText;
         btn.disabled = false;
@@ -663,16 +663,16 @@ function finalizePaymentSuccess(btn, originalText) {
 function completeBooking(paymentId) {
     // 1. Generate Specific Booking ID natively
     const bookingId = "#BR-" + Math.floor(100000 + Math.random() * 900000);
-    
+
     let totalAmount = 0;
     let itemsListHtml = '';
     let parsedItems = [];
-    
+
     for (let item in cart) {
         let c = cart[item];
         totalAmount += c.count * c.price;
         parsedItems.push({ name: item, count: c.count, price: c.price });
-        
+
         itemsListHtml += `
             <div class="receipt-item d-flex justify-content-between mb-2">
                 <span>${item} (x${c.count})</span>
@@ -684,7 +684,7 @@ function completeBooking(paymentId) {
     // --- WRITE TO PERSISTENT DATABASE ---
     const primaryService = parsedItems.length > 0 ? parsedItems[0].name : "Premium Services";
     const serviceTitle = parsedItems.length > 1 ? primaryService + " + " + (parsedItems.length - 1) + " more" : primaryService;
-    
+
     const newBooking = {
         id: bookingId,
         service: serviceTitle,
@@ -692,12 +692,12 @@ function completeBooking(paymentId) {
         total: totalAmount,
         items: parsedItems
     };
-    
+
     userBookings.unshift(newBooking); // Add to beginning of history payload
     localStorage.setItem('bloorush_userBookings', JSON.stringify(userBookings));
-    
+
     // Refresh Tabular UI mapping locally
-    if(document.getElementById('bookingModalBody')) {
+    if (document.getElementById('bookingModalBody')) {
         // The modal content gets re-fetched upon clicking, but just to be safe
     }
 
@@ -716,7 +716,7 @@ function completeBooking(paymentId) {
     cart = {};
     updateCartUI();
     syncFrontEndCounters();
-    
+
     // Automatically redirect back to the home view underneath the overlay
     backToServices();
 }
