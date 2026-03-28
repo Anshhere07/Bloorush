@@ -592,6 +592,15 @@ function backToServices() {
 let selectedTimeSlot = null;
 
 function openSlotBooking() {
+    // Geofence Interceptor
+    const userLocation = (document.getElementById("locationText").innerText || "").toLowerCase();
+    const isAvailable = userLocation.includes("nagpur") || userLocation.includes("shahjahanpur");
+    
+    if (!isAvailable) {
+        $('#locationErrorModal').modal('show');
+        return;
+    }
+
     if (!currentUser) {
         if (typeof showToast === "function") showToast("Authentication Required", "Please log in using the form on the left to book a slot.", false);
         return;
