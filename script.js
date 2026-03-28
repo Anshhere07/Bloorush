@@ -588,10 +588,12 @@ function backToServices() {
     document.querySelector('.services-section').scrollIntoView({ behavior: 'smooth' });
 }
 
-// PAYMENT OPTIONS MODAL & SUCCESS RECEIPT ARCHITECTURE
-function openPaymentOptions() {
+// SLOT BOOKING MODAL & WHATSAPP REDIRECT ARCHITECTURE
+let selectedTimeSlot = null;
+
+function openSlotBooking() {
     if (!currentUser) {
-        if (typeof showToast === "function") showToast("Authentication Required", "Please log in using the form on the left to confirm and pay securely.", false);
+        if (typeof showToast === "function") showToast("Authentication Required", "Please log in using the form on the left to book a slot.", false);
         return;
     }
 
@@ -605,59 +607,57 @@ function openPaymentOptions() {
         totalAmount += cart[item].count * cart[item].price;
     }
 
-    // Inject Total into Payment Modal Button
-    document.getElementById('paymentModalTotalAmount').innerText = totalAmount;
+    // Reset slots
+    document.querySelectorAll('.slot-item').forEach(el => el.classList.remove('selected'));
+    selectedTimeSlot = null;
+
+    // Inject Total into Slot Modal
+    document.getElementById('slotModalTotalAmount').innerText = totalAmount;
 
     // Show Interactive Modal
-    $('#paymentModal').modal('show');
+    $('#slotBookingModal').modal('show');
 }
 
-function processPaymentSimulation(btn) {
-    const originalText = btn.innerHTML;
-    let totalAmount = document.getElementById('paymentModalTotalAmount').innerText;
+function selectSlot(element) {
+    document.querySelectorAll('.slot-item').forEach(el => el.classList.remove('selected'));
+    element.classList.add('selected');
+    selectedTimeSlot = element.innerText;
+}
 
-    // Detect if UPI Tab is Active for Native Deep Linking
-    if (document.getElementById('v-pills-upi').classList.contains('active')) {
-        // Trigger actual native intent
-        window.location.href = `upi://pay?pa=8707665217@ptsbi&pn=Bloorush&am=${totalAmount}&cu=INR`;
-
-        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Verifying Bank App...';
-        btn.disabled = true;
-        btn.style.opacity = '0.8';
-
-        // Wait longer (5 seconds) to pretend the user is executing it in their external UPI app
-        setTimeout(() => {
-            finalizePaymentSuccess(btn, originalText);
-        }, 5000);
+function confirmWhatsAppBooking(btn) {
+    if (!selectedTimeSlot) {
+        if (typeof showToast === "function") showToast("Slot Required", "Please select a time slot first.", false);
+        else alert("Please select a time slot first.");
         return;
     }
 
-    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing Securely...';
+    let totalAmount = document.getElementById('slotModalTotalAmount').innerText;
+    let itemsList = [];
+    for (let item in cart) {
+        itemsList.push(`- ${item} (x${cart[item].count})`);
+    }
+
+    const message = `Hello Bloorush!\nI am ${currentUser.name}, and I would like to book the following premium services:\n\n${itemsList.join('\n')}\n\nTotal Estimate: ₹${totalAmount}\nPreferred Time Slot: ${selectedTimeSlot}\n\nPlease confirm my booking!`;
+
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/918010687985?text=${encodedMessage}`;
+
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Redirecting to WhatsApp...';
     btn.disabled = true;
-    btn.style.opacity = '0.8';
-
-    // Standard Bank/Card Check Delay
-    setTimeout(() => {
-        finalizePaymentSuccess(btn, originalText);
-    }, 2000);
-}
-
-function finalizePaymentSuccess(btn, originalText) {
-    btn.innerHTML = '<i class="fas fa-check-circle"></i> Payment Successful';
-    btn.style.backgroundColor = '#28a745'; // Green Success Mode
-    btn.style.borderColor = '#28a745';
 
     setTimeout(() => {
-        $('#paymentModal').modal('hide');
-        completeBooking("pay_" + Math.random().toString(36).substring(2, 10));
-
-        // Return button state
+        // Complete the system booking to save to History Table
+        completeBooking("wa_" + Math.random().toString(36).substring(2, 10));
+        $('#slotBookingModal').modal('hide');
+        
+        // Push user to WhatsApp!
+        window.open(whatsappUrl, '_blank');
+        
+        // Reset button
         btn.innerHTML = originalText;
         btn.disabled = false;
-        btn.style.backgroundColor = '';
-        btn.style.borderColor = '';
-        btn.style.opacity = '1';
-    }, 800);
+    }, 1000);
 }
 
 function completeBooking(paymentId) {

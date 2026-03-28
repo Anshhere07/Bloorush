@@ -446,7 +446,7 @@
                     <h5>Total Amount</h5>
                     <h5 style="color: var(--primary); font-weight: bold;">₹<span id="checkoutTotalAmount">0</span></h5>
                 </div>
-                <button id="confirmPayBtn" class="checkout-btn mt-4" onclick="openPaymentOptions()">Confirm & Pay</button>
+                <button id="confirmPayBtn" class="checkout-btn mt-4" onclick="openSlotBooking()">Book</button>
             </div>
         </div>
     </section>
@@ -848,109 +848,37 @@
     </footer>
 
 
-    <!-- PAYMENT OPTIONS MODAL -->
-    <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true" data-backdrop="static">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
+    <!-- SLOT SELECTION MODAL -->
+    <div class="modal fade" id="slotBookingModal" tabindex="-1" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
                 <div class="modal-header border-0 bg-light px-4 py-3 align-items-center">
-                    <h5 class="modal-title font-weight-bold" style="color: var(--primary-dark);"><i class="fas fa-shield-alt text-success mr-2"></i>Secure Payment</h5>
+                    <h5 class="modal-title font-weight-bold" style="color: var(--primary-dark);"><i class="far fa-clock text-primary mr-2"></i>Select Booking Time</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true" style="font-size: 1.5rem;">&times;</span>
                     </button>
                 </div>
-                <div class="payment-modal-body">
-                    <!-- Sidebar -->
-                    <div class="payment-sidebar">
-                        <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                            <a class="nav-link active" id="v-pills-upi-tab" data-toggle="pill" href="#v-pills-upi" role="tab" aria-selected="true">
-                                <i class="fas fa-mobile-alt"></i> UPI
-                            </a>
-                            <a class="nav-link" id="v-pills-card-tab" data-toggle="pill" href="#v-pills-card" role="tab" aria-selected="false">
-                                <i class="far fa-credit-card"></i> Credit/Debit
-                            </a>
-                            <a class="nav-link" id="v-pills-netbanking-tab" data-toggle="pill" href="#v-pills-netbanking" role="tab" aria-selected="false">
-                                <i class="fas fa-university"></i> Net Banking
-                            </a>
-                            <a class="nav-link" id="v-pills-wallet-tab" data-toggle="pill" href="#v-pills-wallet" role="tab" aria-selected="false">
-                                <i class="fas fa-wallet"></i> Wallets
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <!-- Content -->
-                    <div class="payment-content">
-                        <div class="tab-content" id="v-pills-tabContent">
-                            
-                            <!-- UPI TAB -->
-                            <div class="tab-pane fade show active" id="v-pills-upi" role="tabpanel">
-                                <h6 class="font-weight-bold mb-3">Pay via UPI Apps</h6>
-                                <div class="upi-apps">
-                                    <div class="upi-app selected" onclick="document.querySelectorAll('.upi-app').forEach(el=>el.classList.remove('selected')); this.classList.add('selected');">
-                                        <i class="fab fa-google" style="color:#DB4437;"></i><span>GPay</span>
-                                    </div>
-                                    <div class="upi-app" onclick="document.querySelectorAll('.upi-app').forEach(el=>el.classList.remove('selected')); this.classList.add('selected');">
-                                        <i class="fas fa-rupee-sign" style="color:#6739B7;"></i><span>PhonePe</span>
-                                    </div>
-                                    <div class="upi-app" onclick="document.querySelectorAll('.upi-app').forEach(el=>el.classList.remove('selected')); this.classList.add('selected');">
-                                        <i class="fas fa-wallet" style="color:#00BAF2;"></i><span>Paytm</span>
-                                    </div>
-                                </div>
-                                <div class="form-group mb-0">
-                                    <label class="text-muted" style="font-size: 0.9rem;">Or Enter Any UPI ID</label>
-                                    <input type="text" class="payment-input" placeholder="e.g. yourname@ybl" value="demo@ybl">
-                                </div>
-                            </div>
-                            
-                            <!-- CARD TAB -->
-                            <div class="tab-pane fade" id="v-pills-card" role="tabpanel">
-                                <h6 class="font-weight-bold mb-3">Pay via Credit / Debit Card</h6>
-                                <input type="text" class="payment-input" placeholder="Card Number" value="4444 4444 4242 4242">
-                                <div class="d-flex" style="gap: 15px;">
-                                    <input type="text" class="payment-input" placeholder="MM/YY" value="12/28">
-                                    <input type="password" class="payment-input" placeholder="CVV" value="123">
-                                </div>
-                                <input type="text" class="payment-input mb-0" placeholder="Cardholder Name" value="Bloorush Customer">
-                            </div>
-
-                            <!-- NET BANKING TAB -->
-                            <div class="tab-pane fade" id="v-pills-netbanking" role="tabpanel">
-                                <h6 class="font-weight-bold mb-3">Select Your Bank</h6>
-                                <select class="payment-input mb-0">
-                                    <option>HDFC Bank</option>
-                                    <option>State Bank of India (SBI)</option>
-                                    <option>ICICI Bank</option>
-                                    <option>Axis Bank</option>
-                                    <option>Kotak Mahindra</option>
-                                    <option>Other Banks...</option>
-                                </select>
-                            </div>
-
-                            <!-- WALLETS TAB -->
-                            <div class="tab-pane fade" id="v-pills-wallet" role="tabpanel">
-                                <h6 class="font-weight-bold mb-3">Select Wallet</h6>
-                                <div class="upi-apps mb-0">
-                                    <div class="upi-app selected" style="width: 100px;">
-                                        <i class="fab fa-amazon" style="color:#FF9900;"></i><span>Amazon Pay</span>
-                                    </div>
-                                    <div class="upi-app" style="width: 100px;">
-                                        <i class="fas fa-bolt" style="color:#F37021;"></i><span>Freecharge</span>
-                                    </div>
-                                    <div class="upi-app" style="width: 100px;">
-                                        <i class="fas fa-comment-dollar" style="color:#003466;"></i><span>Mobikwik</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                        </div>
+                <div class="modal-body px-4 py-4">
+                    <h6 class="font-weight-bold text-muted mb-3" style="font-size: 0.95rem;">Choose a preferred time slot range:</h6>
+                    <div class="slot-grid" id="slotGridSelection">
+                        <div class="slot-item" onclick="selectSlot(this)">10:00 AM - 11:00 AM</div>
+                        <div class="slot-item" onclick="selectSlot(this)">11:00 AM - 12:00 PM</div>
+                        <div class="slot-item" onclick="selectSlot(this)">12:00 PM - 01:00 PM</div>
+                        <div class="slot-item" onclick="selectSlot(this)">01:00 PM - 02:00 PM</div>
+                        <div class="slot-item" onclick="selectSlot(this)">02:00 PM - 03:00 PM</div>
+                        <div class="slot-item" onclick="selectSlot(this)">03:00 PM - 04:00 PM</div>
+                        <div class="slot-item" onclick="selectSlot(this)">04:00 PM - 05:00 PM</div>
+                        <div class="slot-item" onclick="selectSlot(this)">05:00 PM - 06:00 PM</div>
+                        <div class="slot-item" onclick="selectSlot(this)">06:00 PM - 07:00 PM</div>
                     </div>
                 </div>
-                <div class="modal-footer border-top px-4 py-3 bg-white d-flex justify-content-between align-items-center">
-                    <div>
-                        <span class="text-muted d-block" style="font-size: 0.85rem;">Total Payable Amount</span>
-                        <h4 class="font-weight-bold mb-0" style="color: var(--primary);">₹<span id="paymentModalTotalAmount">0</span></h4>
+                <div class="modal-footer border-top px-4 py-3 bg-white" style="flex-direction: column; align-items: stretch;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted font-weight-bold">Estimate Total:</span>
+                        <h4 class="font-weight-bold mb-0" style="color: var(--primary);">₹<span id="slotModalTotalAmount">0</span></h4>
                     </div>
-                    <button class="btn btn-primary px-5 py-2 font-weight-bold" style="border-radius: 8px; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(56, 182, 255, 0.3);" onclick="processPaymentSimulation(this)">
-                        Pay Securely <i class="fas fa-lock ml-2"></i>
+                    <button class="btn btn-success font-weight-bold py-3 text-uppercase" style="border-radius: 8px; font-size: 1.05rem; box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);" onclick="confirmWhatsAppBooking(this)">
+                        WhatsApp Us <i class="fab fa-whatsapp ml-2" style="font-size: 1.2rem;"></i>
                     </button>
                 </div>
             </div>
