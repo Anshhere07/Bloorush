@@ -1135,6 +1135,7 @@ body {
   }
 
   .services-left {
-    grid-template-columns: 1fr; /* Single column stack for extreme small mobile */
+    grid-template-columns: repeat(2, 1fr); /* Two columns stack for mobile as requested */
+    gap: 10px;
   }
 }

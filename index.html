@@ -171,7 +171,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            <div class="add-btn-container service-card" data-name="Utensils Cleaning" data-price="79"
+                            <div class="add-btn-container service-card" data-name="Utensils Cleaning" data-price="79" data-time="40-45 min (MAX)"
                                 onclick="event.stopPropagation()">
                                 <button class="add-btn shadow-sm" onclick="showCounter(this)">+</button>
                                 <div class="counter-pill shadow-sm" style="display:none;">
@@ -209,7 +209,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            <div class="add-btn-container service-card" data-name="Bathroom Cleaning" data-price="199"
+                            <div class="add-btn-container service-card" data-name="Bathroom Cleaning" data-price="199" data-time="60-70 min (MAX)"
                                 onclick="event.stopPropagation()">
                                 <button class="add-btn shadow-sm" onclick="showCounter(this)">+</button>
                                 <div class="counter-pill shadow-sm" style="display:none;">
@@ -247,7 +247,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            <div class="add-btn-container service-card" data-name="Mopping & Sweeping" data-price="99"
+                            <div class="add-btn-container service-card" data-name="Mopping & Sweeping" data-price="99" data-time="30-40 min (MAX)"
                                 onclick="event.stopPropagation()">
                                 <button class="add-btn shadow-sm" onclick="showCounter(this)">+</button>
                                 <div class="counter-pill shadow-sm" style="display:none;">
@@ -285,7 +285,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            <div class="add-btn-container service-card" data-name="Home Dusting" data-price="149"
+                            <div class="add-btn-container service-card" data-name="Home Dusting" data-price="149" data-time="55-60 min (MAX)"
                                 onclick="event.stopPropagation()">
                                 <button class="add-btn shadow-sm" onclick="showCounter(this)">+</button>
                                 <div class="counter-pill shadow-sm" style="display:none;">
@@ -323,7 +323,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            <div class="add-btn-container service-card" data-name="Fan Cleaning" data-price="49"
+                            <div class="add-btn-container service-card" data-name="Fan Cleaning" data-price="49" data-time="20-30 min (MAX)"
                                 onclick="event.stopPropagation()">
                                 <button class="add-btn shadow-sm" onclick="showCounter(this)">+</button>
                                 <div class="counter-pill shadow-sm" style="display:none;">
@@ -361,7 +361,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            <div class="add-btn-container service-card" data-name="Window Cleaning" data-price="89"
+                            <div class="add-btn-container service-card" data-name="Window Cleaning" data-price="89" data-time="30-40 min (MAX)"
                                 onclick="event.stopPropagation()">
                                 <button class="add-btn shadow-sm" onclick="showCounter(this)">+</button>
                                 <div class="counter-pill shadow-sm" style="display:none;">
@@ -858,8 +858,24 @@
                         <span aria-hidden="true" style="font-size: 1.5rem;">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body px-4 py-4">
-                    <h6 class="font-weight-bold text-muted mb-3" style="font-size: 0.95rem;">Choose a preferred time slot range:</h6>
+                <div class="modal-body px-4 py-4" style="max-height: 70vh; overflow-y: auto;">
+                    <!-- Address Section -->
+                    <h6 class="font-weight-bold text-muted mb-2" style="font-size: 0.95rem;">Service Address:</h6>
+                    <div id="savedAddressBlock" style="display:none; margin-bottom: 5px;"></div>
+                    <button class="btn btn-sm btn-outline-primary mb-3" id="toggleAddressBtn" onclick="toggleNewAddressForm()">+ Add New Address</button>
+                    
+                    <div id="newAddressForm" style="display:none; border: 1px solid #eaeaea; padding: 12px; border-radius: 8px; margin-bottom: 15px; background: #f8f9fa;">
+                        <input type="text" id="addrHouse" class="form-control mb-2 form-control-sm" placeholder="House No. / Flat (Required)">
+                        <input type="text" id="addrFloor" class="form-control mb-2 form-control-sm" placeholder="Floor No.">
+                        <input type="text" id="addrStreet" class="form-control form-control-sm" placeholder="Street Name / Landmark (Required)">
+                    </div>
+
+                    <!-- Date Section -->
+                    <h6 class="font-weight-bold text-muted mb-2 mt-3" style="font-size: 0.95rem;">Preferred Date:</h6>
+                    <input type="date" id="bookingDate" class="form-control mb-3">
+
+                    <!-- Time Section -->
+                    <h6 class="font-weight-bold text-muted mb-2 mt-3" style="font-size: 0.95rem;">Choose time slot:</h6>
                     <div class="slot-grid" id="slotGridSelection">
                         <div class="slot-item" onclick="selectSlot(this)">10:00 AM - 11:00 AM</div>
                         <div class="slot-item" onclick="selectSlot(this)">11:00 AM - 12:00 PM</div>

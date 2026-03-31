@@ -406,9 +406,10 @@ function showCounter(btn) {
     const card = container.closest(".service-card");
     const name = card.getAttribute("data-name");
     const price = parseInt(card.getAttribute("data-price"));
+    const timeLimit = card.getAttribute("data-time") || "30-40 min (MAX)";
 
     if (!cart[name]) {
-        cart[name] = { count: 1, price: price };
+        cart[name] = { count: 1, price: price, timeLimit: timeLimit };
     } else {
         cart[name].count++;
     }
@@ -430,6 +431,7 @@ function updateCount(btn, change) {
     const card = btn.closest(".service-card");
     const name = card.getAttribute("data-name");
     const price = parseInt(card.getAttribute("data-price"));
+    const timeLimit = card.getAttribute("data-time") || "30-40 min (MAX)";
 
     if (count <= 0) {
         count = 0;
@@ -437,7 +439,7 @@ function updateCount(btn, change) {
         counterPill.style.display = 'none';
         addBtn.style.display = 'flex';
     } else {
-        cart[name] = { count, price };
+        cart[name] = { count, price, timeLimit };
     }
 
     span.innerText = count;
@@ -591,6 +593,32 @@ function backToServices() {
 // SLOT BOOKING MODAL & WHATSAPP REDIRECT ARCHITECTURE
 let selectedTimeSlot = null;
 
+// UTILS FOR ADDRESS
+function loadSavedAddresses() {
+    if(!currentUser) return [];
+    let addrs = localStorage.getItem('bloorush_userAddresses_' + currentUser.email);
+    return addrs ? JSON.parse(addrs) : [];
+}
+function saveNewAddress(addrStr) {
+    if(!currentUser) return;
+    let addrs = loadSavedAddresses();
+    if(!addrs.includes(addrStr)) {
+        addrs.push(addrStr);
+        localStorage.setItem('bloorush_userAddresses_' + currentUser.email, JSON.stringify(addrs));
+    }
+}
+function toggleNewAddressForm() {
+    const form = document.getElementById('newAddressForm');
+    const btn = document.getElementById('toggleAddressBtn');
+    if(form.style.display === 'none') {
+        form.style.display = 'block';
+        btn.innerText = "- Cancel New Address";
+    } else {
+        form.style.display = 'none';
+        btn.innerText = "+ Add New Address";
+    }
+}
+
 function openSlotBooking() {
     // Geofence Interceptor
     const userLocation = (document.getElementById("locationText").innerText || "").toLowerCase();
@@ -616,6 +644,33 @@ function openSlotBooking() {
         totalAmount += cart[item].count * cart[item].price;
     }
 
+    // Setup Address UI
+    document.getElementById('newAddressForm').style.display = 'none';
+    const savedAddressBlock = document.getElementById('savedAddressBlock');
+    const toggleAddrBtn = document.getElementById('toggleAddressBtn');
+    const addresses = loadSavedAddresses();
+    
+    if (addresses.length > 0) {
+        let h = '';
+        addresses.forEach((ad, idx) => {
+            h += `<div class="form-check mb-1">
+                    <input class="form-check-input" type="radio" name="savedAddressRadio" id="addrRadio${idx}" value="${ad}" ${idx===0 ? 'checked' : ''}>
+                    <label class="form-check-label text-muted" style="font-size: 0.85rem;" for="addrRadio${idx}">${ad}</label>
+                  </div>`;
+        });
+        savedAddressBlock.innerHTML = h;
+        savedAddressBlock.style.display = 'block';
+        toggleAddrBtn.innerText = "+ Add New Address";
+        toggleAddrBtn.style.display = 'inline-block';
+    } else {
+        savedAddressBlock.style.display = 'none';
+        document.getElementById('newAddressForm').style.display = 'block';
+        toggleAddrBtn.style.display = 'none'; // Force they write an address
+    }
+
+    // Default Date to Today
+    document.getElementById('bookingDate').valueAsDate = new Date();
+
     // Reset slots
     document.querySelectorAll('.slot-item').forEach(el => el.classList.remove('selected'));
     selectedTimeSlot = null;
@@ -640,13 +695,58 @@ function confirmWhatsAppBooking(btn) {
         return;
     }
 
+    // Extract Address logic
+    let finalAddress = "";
+    if (document.getElementById('newAddressForm').style.display === 'block') {
+        const h = document.getElementById('addrHouse').value.trim();
+        const f = document.getElementById('addrFloor').value.trim();
+        const s = document.getElementById('addrStreet').value.trim();
+        
+        if(!h || !s) {
+            alert("House Number and Street Name are required for new addresses!");
+            return;
+        }
+        finalAddress = `House: ${h}, Floor: ${f || 'N/A'}, Street: ${s}`;
+        saveNewAddress(finalAddress);
+    } else {
+        const selectedRadio = document.querySelector('input[name="savedAddressRadio"]:checked');
+        if(selectedRadio){
+            finalAddress = selectedRadio.value;
+        } else {
+            alert("Please provide or select a service address.");
+            return;
+        }
+    }
+
+    // Extract Date
+    const chosenDate = document.getElementById('bookingDate').value;
+    if(!chosenDate) {
+        alert("Please select a preferred date.");
+        return;
+    }
+
     let totalAmount = document.getElementById('slotModalTotalAmount').innerText;
     let itemsList = [];
     for (let item in cart) {
-        itemsList.push(`- ${item} (x${cart[item].count})`);
+        // Output format matching user prompt
+        itemsList.push(`*${item} (x${cart[item].count})*\n${cart[item].price} rs\n${cart[item].timeLimit || '30-40 min (MAX)'}`);
     }
 
-    const message = `Hello Bloorush!\nI am ${currentUser.name}, and I would like to book the following premium services:\n\n${itemsList.join('\n')}\n\nTotal Estimate: ₹${totalAmount}\nPreferred Time Slot: ${selectedTimeSlot}\n\nPlease confirm my booking!`;
+    const message = `Hello Bloorush!
+I am ${currentUser.name}, and I would like to pre-book the following premium services:
+
+${itemsList.join('\n\n')}
+
+*Total Estimate:* ₹${totalAmount}
+
+*Customer Location:*
+${finalAddress}
+*Map Link:* https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(finalAddress)}
+
+*Preferred Date:* ${chosenDate}
+*Preferred Time Slot:* ${selectedTimeSlot}
+
+Please confirm my booking!`;
 
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/918010687985?text=${encodedMessage}`;
