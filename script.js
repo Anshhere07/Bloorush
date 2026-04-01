@@ -275,6 +275,17 @@ document.getElementById('authSubmitBtn').addEventListener('click', function (e) 
         showToast("Error", "Email and Password are required!", false);
         return;
     }
+    
+    // JS Security Authentication Hardening
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailField)) {
+        showToast("Error", "Please enter a correctly formatted email address.", false);
+        return;
+    }
+    if (passwordField.length < 6) {
+        showToast("Security Check", "Passwords must be at least 6 characters long.", false);
+        return;
+    }
 
     if (isLoginMode) {
         // Login Mode
@@ -392,29 +403,106 @@ function fetchGoogleUserProfile(accessToken) {
 
 
 
-//  Services
+//  Dynamic Pricing Logic
+const servicePricingMatrix = {
+    'Utensils Cleaning': { '30': 89, '45': 129, '60': 169, '90': 239 },
+    'Bathroom Cleaning': { '30': 99, '45': 149, '60': 189, '90': 189 },
+    'Toilet Cleaning':   { '30': 99, '45': 149, '60': 189, '90': 239 },
+    'Mopping & Sweeping':{ '30': 79, '45': 119, '60': 159, '90': 219 },
+    'Home Dusting':      { '30': 79, '45': 119, '60': 159, '90': 219 },
+    'Fan Cleaning':      { '1': 49, '2': 98, '3': 147, '4': 196 },
+    'Window Cleaning':   { '1': 49, '2': 98, '3': 147, '4': 196 }
+};
+
+let currentFilter = 'prebooking';
+
+function setServiceFilter(filter) {
+    if (Object.keys(cart).length > 0) {
+        if (!confirm("Changing booking types will reset your current cart. Continue?")) return;
+        cart = {};
+        document.querySelectorAll('.counter-pill').forEach(pill => pill.style.display = 'none');
+        document.querySelectorAll('.add-btn').forEach(btn => btn.style.display = 'flex');
+        updateCartUI();
+    }
+    
+    currentFilter = filter;
+    
+    // Update active tab UI
+    document.querySelectorAll('.filter-tab').forEach(b => {
+        b.classList.remove('active', 'btn-primary', 'text-white');
+        b.classList.add('text-muted');
+    });
+    const activeTab = document.querySelector(`.filter-tab[data-filter="${filter}"]`);
+    activeTab.classList.remove('text-muted');
+    activeTab.classList.add('active', 'btn-primary', 'text-white');
+
+    // Update Hero Price dynamically
+    const heroRates = { 'prebooking': '3', 'instant': '5', 'reliable': '2' };
+    document.getElementById('heroPrice').innerText = heroRates[filter];
+
+    document.querySelectorAll('.service-item').forEach(item => {
+        const select = item.querySelector('.duration-selector');
+        updateCardPrice(select);
+    });
+}
+
+function updateCardPrice(selectElem) {
+    const item = selectElem.closest('.service-item');
+    const title = item.querySelector('.service-title').innerText;
+    const priceText = item.querySelector('.service-price');
+    const duration = selectElem.value;
+    const addBtnContainer = item.querySelector('.add-btn-container');
+
+    // Default to Mopping logic if somehow explicitly missing from map
+    const matrix = servicePricingMatrix[title] || servicePricingMatrix['Mopping & Sweeping'];
+    let basePrice = matrix[duration] || 0;
+    
+    // Core Modifiers
+    let newPrice = basePrice;
+    if (currentFilter === 'instant')       newPrice = basePrice + 15;
+    else if (currentFilter === 'prebooking') newPrice = basePrice;
+    else if (currentFilter === 'reliable')   newPrice = basePrice;
+
+    priceText.innerText = "₹" + newPrice;
+    
+    // Update container datasets for the Add To Cart logic
+    let timeLabel = duration + ' min';
+    if (title.includes('Fan') || title.includes('Window')) {
+        timeLabel = duration + (duration === '1' ? ' Unit' : ' Units');
+    }
+
+    addBtnContainer.setAttribute('data-price', newPrice);
+    addBtnContainer.setAttribute('data-time', currentFilter === 'reliable' ? timeLabel + ' (Reliable)' : timeLabel);
+}
 
 let cart = {};
 
 function showCounter(btn) {
     const container = btn.parentElement;
     const counterPill = container.querySelector('.counter-pill');
+    
+    const card = container.closest(".service-card");
+    const nameStr = card.getAttribute("data-name");
+    
+    // Safety sync to ensure current duration is accurately grabbed if user clicked blindly
+    updateCardPrice(container.closest('.service-item').querySelector('.duration-selector'));
+
+    const price = parseInt(card.getAttribute("data-price"));
+    const timeLimit = card.getAttribute("data-time") || "30 min";
+    
+    // Unique ID combining service name and the precise duration
+    const cartItemId = `${nameStr} | ${timeLimit}`;
 
     btn.style.display = 'none';
     counterPill.style.display = 'flex';
 
-    const card = container.closest(".service-card");
-    const name = card.getAttribute("data-name");
-    const price = parseInt(card.getAttribute("data-price"));
-    const timeLimit = card.getAttribute("data-time") || "30-40 min (MAX)";
-
-    if (!cart[name]) {
-        cart[name] = { count: 1, price: price, timeLimit: timeLimit };
+    if (!cart[cartItemId]) {
+        cart[cartItemId] = { rawName: nameStr, count: 1, price: price, timeLimit: timeLimit };
     } else {
-        cart[name].count++;
+        cart[cartItemId].count++;
     }
 
-    counterPill.querySelector('span').innerText = cart[name].count;
+    counterPill.querySelector('span').innerText = cart[cartItemId].count;
     updateCartUI();
 }
 
@@ -423,25 +511,27 @@ function updateCount(btn, change) {
     const container = counterPill.parentElement;
     const addBtn = container.querySelector('.add-btn');
 
-    const span = counterPill.querySelector("span");
-    let count = parseInt(span.innerText);
-
-    count += change;
-
     const card = btn.closest(".service-card");
-    const name = card.getAttribute("data-name");
+    const nameStr = card.getAttribute("data-name");
     const price = parseInt(card.getAttribute("data-price"));
-    const timeLimit = card.getAttribute("data-time") || "30-40 min (MAX)";
+    const timeLimit = card.getAttribute("data-time");
+    
+    const cartItemId = `${nameStr} | ${timeLimit}`;
+
+    let count = 0;
+    if (cart[cartItemId]) {
+        cart[cartItemId].count += change;
+        count = cart[cartItemId].count;
+    }
 
     if (count <= 0) {
         count = 0;
-        delete cart[name];
+        delete cart[cartItemId];
         counterPill.style.display = 'none';
         addBtn.style.display = 'flex';
-    } else {
-        cart[name] = { count, price, timeLimit };
     }
 
+    const span = counterPill.querySelector("span");
     span.innerText = count;
     updateCartUI();
 }
@@ -480,12 +570,12 @@ function updateCartUI() {
         total += itemTotal;
         totalItems += c.count;
 
-        const imgSrc = images[item] || "service_utensils_icon.png";
+        const imgSrc = images[c.rawName] || "service_utensils_icon.png";
 
         cartItems.innerHTML += `
         <div class="cart-item-row">
             <div class="cart-item-img">
-                <img src="assets/${imgSrc}" alt="${item}">
+                <img src="assets/${imgSrc}" alt="${c.rawName}">
             </div>
             <div class="cart-item-details">
                 <p class="cart-item-title">${item}</p>
@@ -522,15 +612,20 @@ function updateCountFromCart(name, change) {
 function syncFrontEndCounters() {
     const allContainers = document.querySelectorAll('.add-btn-container');
     allContainers.forEach(container => {
-        const name = container.getAttribute('data-name');
-        const addBtn = container.querySelector('.add-btn');
-        const pill = container.querySelector('.counter-pill');
-        const span = pill.querySelector('span');
+        const nameStr = container.getAttribute('data-name');
+        const activeSelect = container.closest('.service-item').querySelector('.duration-selector');
+        
+        // Safety sync to ensure data sets accurately reflect the currently selected combo
+        if(cart[`${nameStr} | ${activeSelect.value} min`]) { 
+           // Edgecase: Reliable logic overrides time limits appended strings
+        }
+        
+        let cartItemId = `${nameStr} | ${container.getAttribute('data-time')}`;
 
-        if (cart[name]) {
+        if (cart[cartItemId]) {
             addBtn.style.display = 'none';
             pill.style.display = 'flex';
-            span.innerText = cart[name].count;
+            span.innerText = cart[cartItemId].count;
         } else {
             addBtn.style.display = 'flex';
             pill.style.display = 'none';
@@ -668,21 +763,53 @@ function openSlotBooking() {
         toggleAddrBtn.style.display = 'none'; // Force they write an address
     }
 
-    // Default Date to Today
-    document.getElementById('bookingDate').valueAsDate = new Date();
+    // Default Date & Temporal Limits
+    const dateInput = document.getElementById('bookingDate');
+    const todayStr = new Date().toISOString().split("T")[0];
+    dateInput.setAttribute('min', todayStr);
+    dateInput.valueAsDate = new Date();
 
-    // Reset slots
-    document.querySelectorAll('.slot-item').forEach(el => el.classList.remove('selected'));
+    // Reset slots cleanly before initial validate
+    document.querySelectorAll('.slot-item').forEach(el => el.classList.remove('selected', 'disabled-slot'));
     selectedTimeSlot = null;
-
+    
     // Inject Total into Slot Modal
     document.getElementById('slotModalTotalAmount').innerText = totalAmount;
 
-    // Show Interactive Modal
+    // Show Interactive Modal & immediately run validation against current OS clock
     $('#slotBookingModal').modal('show');
+    validateBookingDate();
+}
+
+function validateBookingDate() {
+    const dateInput = document.getElementById('bookingDate');
+    const selectedDateStr = dateInput.value;
+    const todayStr = new Date().toISOString().split("T")[0];
+    
+    // Deselect active slot to prevent cheating by selecting early then changing date to today
+    document.querySelectorAll('.slot-item').forEach(el => {
+        el.classList.remove('selected', 'disabled-slot');
+        el.style.opacity = '1';
+        el.style.pointerEvents = 'auto';
+    });
+    selectedTimeSlot = null;
+
+    if (selectedDateStr === todayStr) {
+        // Evaluate hours explicitly
+        const currentHour = new Date().getHours();
+        document.querySelectorAll('.slot-item').forEach(el => {
+            const slotHour = parseInt(el.getAttribute('data-hour'));
+            if (slotHour <= currentHour) {
+                el.classList.add('disabled-slot');
+                el.style.opacity = '0.3';
+                el.style.pointerEvents = 'none'; // Native CSS block
+            }
+        });
+    }
 }
 
 function selectSlot(element) {
+    if(element.classList.contains('disabled-slot')) return;
     document.querySelectorAll('.slot-item').forEach(el => el.classList.remove('selected'));
     element.classList.add('selected');
     selectedTimeSlot = element.innerText;
@@ -728,8 +855,8 @@ function confirmWhatsAppBooking(btn) {
     let totalAmount = document.getElementById('slotModalTotalAmount').innerText;
     let itemsList = [];
     for (let item in cart) {
-        // Output format matching user prompt
-        itemsList.push(`*${item} (x${cart[item].count})*\n${cart[item].price} rs\n${cart[item].timeLimit || '30-40 min (MAX)'}`);
+        // Output format matching user prompt and cleanly mapping the inner tracking logic
+        itemsList.push(`*${cart[item].rawName} (x${cart[item].count})*\n${cart[item].price} rs\n${cart[item].timeLimit}`);
     }
 
     const message = `Hello Bloorush!
@@ -755,13 +882,13 @@ Please confirm my booking!`;
     btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Redirecting to WhatsApp...';
     btn.disabled = true;
 
+    // Execute immediately so mobile browsers do not block the popup feature!
+    window.open(whatsappUrl, '_blank');
+
     setTimeout(() => {
         // Complete the system booking to save to History Table
         completeBooking("wa_" + Math.random().toString(36).substring(2, 10));
         $('#slotBookingModal').modal('hide');
-        
-        // Push user to WhatsApp!
-        window.open(whatsappUrl, '_blank');
         
         // Reset button
         btn.innerHTML = originalText;

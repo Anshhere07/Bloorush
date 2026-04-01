@@ -55,7 +55,8 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
                 <div class="modal-header border-0 bg-light px-4 py-3 align-items-center">
-                    <h5 class="modal-title font-weight-bold" style="color: var(--primary-dark);"><i class="fas fa-history text-primary mr-2"></i>My Bookings</h5>
+                    <h5 class="modal-title font-weight-bold" style="color: var(--primary-dark);"><i
+                            class="fas fa-history text-primary mr-2"></i>My Bookings</h5>
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body p-4" id="bookingModalBody">
@@ -138,6 +139,46 @@
     </div>
 
 
+    <!-- HERO COMPONENT -->
+    <section class="hero-section text-center" style="padding: 60px 20px 30px; background-color: #fcfdfe;">
+        <div class="hero-container mx-auto" style="width: 100%; max-width: 800px;">
+            <span class="badge badge-pill mb-3 px-3 py-2"
+                style="background-color: #e8f0fe; color: #1a73e8; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.5px;">
+                <i class="fas fa-map-marker-alt mr-1"></i> LIVE IN NAGPUR
+            </span>
+            <h1 class="font-weight-bold"
+                style="font-size: clamp(2.2rem, 5vw, 3.5rem); color: #111a2c; line-height: 1.2;">
+                Trusted Home Help at Just
+            </h1>
+            <h1 class="font-weight-bold position-relative d-inline-block"
+                style="font-size: clamp(2.5rem, 6vw, 4rem); color: #1a73e8; margin-top: -5px;">
+                ₹<span id="heroPrice">2</span> per Minute
+                <div
+                    style="height: 6px; background-color: #fbbc05; width: 100%; position: absolute; bottom: 8px; left: 0; z-index: -1;">
+                </div>
+            </h1>
+            <p class="text-muted mt-3 mx-auto" style="font-size: 1.1rem; max-width: 600px;">
+                Verified helpers for quick cleaning & household tasks. Fast, safe, and transparent.
+            </p>
+        </div>
+    </section>
+
+    <!-- FILTER TABS COMPONENT -->
+    <section class="filter-section text-center mb-5 mt-2 px-2">
+        <div class="filter-tabs-container bg-white shadow-sm p-1 mx-auto"
+            style="display: flex; border-radius: 50px; border: 1px solid #eaeaea; overflow-x: auto; max-width: 100%; width: max-content;">
+            <button class="btn filter-tab btn-primary text-white active px-4 py-2 font-weight-bold"
+                data-filter="prebooking" onclick="setServiceFilter('prebooking')"
+                style="border-radius: 50px; transition: all 0.3s; white-space: nowrap;">Pre-booking</button>
+            <button class="btn filter-tab text-muted px-4 py-2 font-weight-bold" data-filter="instant"
+                onclick="setServiceFilter('instant')"
+                style="border-radius: 50px; transition: all 0.3s; white-space: nowrap;">Instant Booking</button>
+            <button class="btn filter-tab text-muted px-4 py-2 font-weight-bold" data-filter="reliable"
+                onclick="setServiceFilter('reliable')"
+                style="border-radius: 50px; transition: all 0.3s; white-space: nowrap;">Reliable House help</button>
+        </div>
+    </section>
+
     <!-- Services -->
     <section class="services-section">
         <div class="services-container">
@@ -157,22 +198,22 @@
                                 <div class="service-card-back">
                                     <h6>Included</h6>
                                     <ul>
-                                        <li>Daily utensils</li>
-                                        <li>Plates & bowls</li>
+                                        <li>Daily utensils only</li>
+                                        <li>Plates, bowls, spoons</li>
                                         <li>Sink rinse</li>
                                         <li>One slab wipe</li>
                                     </ul>
                                     <h6>Not Included</h6>
                                     <ul>
-                                        <li>Burnt vessels</li>
-                                        <li>Pressure lid</li>
-                                        <li>Microwave/gas</li>
-                                        <li>Deep oil</li>
+                                        <li>Burnt / black vessels</li>
+                                        <li>Pressure cooker lid</li>
+                                        <li>Microwave / gas stove</li>
+                                        <li>Heavy oil cleaning</li>
                                     </ul>
                                 </div>
                             </div>
-                            <div class="add-btn-container service-card" data-name="Utensils Cleaning" data-price="79" data-time="40-45 min (MAX)"
-                                onclick="event.stopPropagation()">
+                            <div class="add-btn-container service-card" data-name="Utensils Cleaning" data-price="79"
+                                data-time="40-45 min (MAX)" onclick="event.stopPropagation()">
                                 <button class="add-btn shadow-sm" onclick="showCounter(this)">+</button>
                                 <div class="counter-pill shadow-sm" style="display:none;">
                                     <button onclick="updateCount(this, -1)">-</button>
@@ -181,8 +222,14 @@
                                 </div>
                             </div>
                         </div>
-                        <h6 class="service-title">Utensils Cleaning</h6>
-                        <p class="service-price">₹79</p>
+                        <h6 class="service-title" data-base-tier="tier1">Utensils Cleaning</h6>
+                        <select class="beautiful-select duration-selector" onchange="updateCardPrice(this)">
+                            <option value="30">30 min</option>
+                            <option value="45">45 min</option>
+                            <option value="60">60 min</option>
+                            <option value="90">90 min</option>
+                        </select>
+                        <p class="service-price mb-1">₹89</p>
                     </div>
 
                     <!-- Service 2: Bathroom Cleaning -->
@@ -195,22 +242,22 @@
                                 <div class="service-card-back">
                                     <h6>Included</h6>
                                     <ul>
-                                        <li>Floor scrub</li>
-                                        <li>Toilet bowl</li>
-                                        <li>Mirror wipe</li>
+                                        <li>WC seat (light scrub)</li>
                                         <li>Wash basin</li>
+                                        <li>Mirror</li>
+                                        <li>Floor splash clean</li>
                                     </ul>
                                     <h6>Not Included</h6>
                                     <ul>
-                                        <li>Tile grouting</li>
-                                        <li>Paint removal</li>
-                                        <li>Plumbing fixes</li>
-                                        <li>Acid washing</li>
+                                        <li>Hard water stains</li>
+                                        <li>Tile corners</li>
+                                        <li>Exhaust fan</li>
+                                        <li>Deep chemical cleaning</li>
                                     </ul>
                                 </div>
                             </div>
-                            <div class="add-btn-container service-card" data-name="Bathroom Cleaning" data-price="199" data-time="60-70 min (MAX)"
-                                onclick="event.stopPropagation()">
+                            <div class="add-btn-container service-card" data-name="Bathroom Cleaning" data-price="199"
+                                data-time="60-70 min (MAX)" onclick="event.stopPropagation()">
                                 <button class="add-btn shadow-sm" onclick="showCounter(this)">+</button>
                                 <div class="counter-pill shadow-sm" style="display:none;">
                                     <button onclick="updateCount(this, -1)">-</button>
@@ -219,8 +266,14 @@
                                 </div>
                             </div>
                         </div>
-                        <h6 class="service-title">Bathroom Cleaning</h6>
-                        <p class="service-price">₹199</p>
+                        <h6 class="service-title" data-base-tier="tier3">Bathroom Cleaning</h6>
+                        <select class="beautiful-select duration-selector" onchange="updateCardPrice(this)">
+                            <option value="30">30 min</option>
+                            <option value="45">45 min</option>
+                            <option value="60">60 min</option>
+                            <option value="90">90 min</option>
+                        </select>
+                        <p class="service-price mb-1">₹89</p>
                     </div>
 
                     <!-- Service 3: Mopping & Sweeping -->
@@ -233,22 +286,20 @@
                                 <div class="service-card-back">
                                     <h6>Included</h6>
                                     <ul>
-                                        <li>Dry sweeping</li>
-                                        <li>Wet mopping</li>
-                                        <li>Floor spots</li>
-                                        <li>Trash empty</li>
+                                        <li>1–2 rooms</li>
+                                        <li>Normal dust & dirt</li>
+                                        <li>Regular phenyl mop</li>
                                     </ul>
                                     <h6>Not Included</h6>
                                     <ul>
-                                        <li>Stain scrub</li>
-                                        <li>Machine polish</li>
-                                        <li>Move furniture</li>
-                                        <li>Balcony wash</li>
+                                        <li>Oil / sticky stains</li>
+                                        <li>Carpet / mat wash</li>
+                                        <li>Balcony deep cleaning</li>
                                     </ul>
                                 </div>
                             </div>
-                            <div class="add-btn-container service-card" data-name="Mopping & Sweeping" data-price="99" data-time="30-40 min (MAX)"
-                                onclick="event.stopPropagation()">
+                            <div class="add-btn-container service-card" data-name="Mopping & Sweeping" data-price="99"
+                                data-time="30-40 min (MAX)" onclick="event.stopPropagation()">
                                 <button class="add-btn shadow-sm" onclick="showCounter(this)">+</button>
                                 <div class="counter-pill shadow-sm" style="display:none;">
                                     <button onclick="updateCount(this, -1)">-</button>
@@ -257,8 +308,14 @@
                                 </div>
                             </div>
                         </div>
-                        <h6 class="service-title">Mopping & Sweeping</h6>
-                        <p class="service-price">₹99</p>
+                        <h6 class="service-title" data-base-tier="tier2">Mopping & Sweeping</h6>
+                        <select class="beautiful-select duration-selector" onchange="updateCardPrice(this)">
+                            <option value="30">30 min</option>
+                            <option value="45">45 min</option>
+                            <option value="60">60 min</option>
+                            <option value="90">90 min</option>
+                        </select>
+                        <p class="service-price mb-1">₹79</p>
                     </div>
 
                     <!-- Service 4: Home Dusting -->
@@ -271,22 +328,20 @@
                                 <div class="service-card-back">
                                     <h6>Included</h6>
                                     <ul>
-                                        <li>Surfaces</li>
-                                        <li>Showpieces</li>
-                                        <li>Tables/chairs</li>
-                                        <li>Window sills</li>
+                                        <li>Table, chair, shelves</li>
+                                        <li>Bed (top surface)</li>
+                                        <li>Switchboard (dry)</li>
                                     </ul>
                                     <h6>Not Included</h6>
                                     <ul>
-                                        <li>Inside drawers</li>
-                                        <li>Curtain wash</li>
-                                        <li>Chandelier</li>
-                                        <li>Sofa vacuum</li>
+                                        <li>Ceiling, fan</li>
+                                        <li>Wall stains</li>
+                                        <li>Showcase items</li>
                                     </ul>
                                 </div>
                             </div>
-                            <div class="add-btn-container service-card" data-name="Home Dusting" data-price="149" data-time="55-60 min (MAX)"
-                                onclick="event.stopPropagation()">
+                            <div class="add-btn-container service-card" data-name="Home Dusting" data-price="149"
+                                data-time="55-60 min (MAX)" onclick="event.stopPropagation()">
                                 <button class="add-btn shadow-sm" onclick="showCounter(this)">+</button>
                                 <div class="counter-pill shadow-sm" style="display:none;">
                                     <button onclick="updateCount(this, -1)">-</button>
@@ -295,8 +350,14 @@
                                 </div>
                             </div>
                         </div>
-                        <h6 class="service-title">Home Dusting</h6>
-                        <p class="service-price">₹149</p>
+                        <h6 class="service-title" data-base-tier="tier2">Home Dusting</h6>
+                        <select class="beautiful-select duration-selector" onchange="updateCardPrice(this)">
+                            <option value="30">30 min</option>
+                            <option value="45">45 min</option>
+                            <option value="60">60 min</option>
+                            <option value="90">90 min</option>
+                        </select>
+                        <p class="service-price mb-1">₹79</p>
                     </div>
 
                     <!-- Service 5: Fan Cleaning -->
@@ -309,22 +370,21 @@
                                 <div class="service-card-back">
                                     <h6>Included</h6>
                                     <ul>
-                                        <li>Blade wiping</li>
-                                        <li>Motor dust</li>
-                                        <li>Canopy wipe</li>
-                                        <li>Dry finish</li>
+                                        <li>Ceiling fan dry or semi-wet wipe</li>
+                                        <li>Removes surface dust only</li>
+                                        <li>Up to reachable height (no ladder shifting)</li>
                                     </ul>
                                     <h6>Not Included</h6>
                                     <ul>
-                                        <li>Motor repair</li>
-                                        <li>Repainting</li>
-                                        <li>High ceiling</li>
-                                        <li>Dismantling</li>
+                                        <li>Deep grease removal</li>
+                                        <li>Fan dismantling</li>
+                                        <li>Ceiling stains</li>
+                                        <li>Very high fans (unsafe height)</li>
                                     </ul>
                                 </div>
                             </div>
-                            <div class="add-btn-container service-card" data-name="Fan Cleaning" data-price="49" data-time="20-30 min (MAX)"
-                                onclick="event.stopPropagation()">
+                            <div class="add-btn-container service-card" data-name="Fan Cleaning" data-price="49"
+                                data-time="20-30 min (MAX)" onclick="event.stopPropagation()">
                                 <button class="add-btn shadow-sm" onclick="showCounter(this)">+</button>
                                 <div class="counter-pill shadow-sm" style="display:none;">
                                     <button onclick="updateCount(this, -1)">-</button>
@@ -333,8 +393,14 @@
                                 </div>
                             </div>
                         </div>
-                        <h6 class="service-title">Fan Cleaning</h6>
-                        <p class="service-price">₹49</p>
+                        <h6 class="service-title" data-base-tier="tier2">Fan Cleaning</h6>
+                        <select class="beautiful-select duration-selector" onchange="updateCardPrice(this)">
+                            <option value="1">1 Unit</option>
+                            <option value="2">2 Units</option>
+                            <option value="3">3 Units</option>
+                            <option value="4">4 Units</option>
+                        </select>
+                        <p class="service-price mb-1">₹49</p>
                     </div>
 
                     <!-- Service 6: Window Cleaning -->
@@ -347,22 +413,21 @@
                                 <div class="service-card-back">
                                     <h6>Included</h6>
                                     <ul>
-                                        <li>Glass wiping</li>
-                                        <li>Frame dusting</li>
-                                        <li>Inside track</li>
-                                        <li>Paper finish</li>
+                                        <li>Glass wipe (inside only)</li>
+                                        <li>Window frame light dust</li>
+                                        <li>1–2 normal-sized windows</li>
                                     </ul>
                                     <h6>Not Included</h6>
                                     <ul>
-                                        <li>Outside high</li>
-                                        <li>Heavy washing</li>
-                                        <li>Paint wipe</li>
-                                        <li>Grill scrub</li>
+                                        <li>Outside glass (high-rise)</li>
+                                        <li>Hard water marks</li>
+                                        <li>Grill washing</li>
+                                        <li>Sliding track deep clean</li>
                                     </ul>
                                 </div>
                             </div>
-                            <div class="add-btn-container service-card" data-name="Window Cleaning" data-price="89" data-time="30-40 min (MAX)"
-                                onclick="event.stopPropagation()">
+                            <div class="add-btn-container service-card" data-name="Window Cleaning" data-price="89"
+                                data-time="30-40 min (MAX)" onclick="event.stopPropagation()">
                                 <button class="add-btn shadow-sm" onclick="showCounter(this)">+</button>
                                 <div class="counter-pill shadow-sm" style="display:none;">
                                     <button onclick="updateCount(this, -1)">-</button>
@@ -371,8 +436,14 @@
                                 </div>
                             </div>
                         </div>
-                        <h6 class="service-title">Window Cleaning</h6>
-                        <p class="service-price">₹89</p>
+                        <h6 class="service-title" data-base-tier="tier2">Window Cleaning</h6>
+                        <select class="beautiful-select duration-selector" onchange="updateCardPrice(this)">
+                            <option value="1">1 Unit</option>
+                            <option value="2">2 Units</option>
+                            <option value="3">3 Units</option>
+                            <option value="4">4 Units</option>
+                        </select>
+                        <p class="service-price mb-1">₹49</p>
                     </div>
 
                 </div>
@@ -413,7 +484,8 @@
                 Services</button>
 
             <!-- LEFT 50%: LOGIN OR MAID ANIMATION -->
-            <div class="checkout-left text-center" style="display: flex; flex-direction: column; justify-content: center;">
+            <div class="checkout-left text-center"
+                style="display: flex; flex-direction: column; justify-content: center;">
                 <!-- State 1: Not Logged In -->
                 <div id="checkoutLoginState">
                     <i class="fas fa-lock text-muted mb-3" style="font-size: 40px;"></i>
@@ -426,13 +498,17 @@
                 <!-- State 2: Logged In (Animated Maid) -->
                 <div id="checkoutLoggedState" style="display: none; position: relative;">
                     <div class="maid-animation" style="margin-bottom: 30px;">
-                        <span style="font-size: 100px; display: inline-block; position: relative; animation: floatMaid 3s ease-in-out infinite;">
+                        <span
+                            style="font-size: 100px; display: inline-block; position: relative; animation: floatMaid 3s ease-in-out infinite;">
                             🧹
-                            <i class="fas fa-sparkles" style="position: absolute; top: -15px; right: -25px; font-size: 30px; color: #ffc107; animation: pulseSparkle 1.5s infinite alternate;"></i>
+                            <i class="fas fa-sparkles"
+                                style="position: absolute; top: -15px; right: -25px; font-size: 30px; color: #ffc107; animation: pulseSparkle 1.5s infinite alternate;"></i>
                         </span>
                     </div>
-                    <h3 class="font-weight-bold mb-2">Ready, <span id="checkoutUserName" style="color: var(--primary);">User</span>!</h3>
-                    <p class="text-muted" style="font-size: 1.1rem; line-height: 1.6;">Our verified professionals are eagerly waiting.<br>Just confirm your payment to book your slot.</p>
+                    <h3 class="font-weight-bold mb-2">Ready, <span id="checkoutUserName"
+                            style="color: var(--primary);">User</span>!</h3>
+                    <p class="text-muted" style="font-size: 1.1rem; line-height: 1.6;">Our verified professionals are
+                        eagerly waiting.<br>Just confirm your payment to book your slot.</p>
                 </div>
             </div>
 
@@ -853,7 +929,8 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
                 <div class="modal-header border-0 bg-light px-4 py-3 align-items-center">
-                    <h5 class="modal-title font-weight-bold" style="color: var(--primary-dark);"><i class="far fa-clock text-primary mr-2"></i>Select Booking Time</h5>
+                    <h5 class="modal-title font-weight-bold" style="color: var(--primary-dark);"><i
+                            class="far fa-clock text-primary mr-2"></i>Select Booking Time</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true" style="font-size: 1.5rem;">&times;</span>
                     </button>
@@ -862,39 +939,51 @@
                     <!-- Address Section -->
                     <h6 class="font-weight-bold text-muted mb-2" style="font-size: 0.95rem;">Service Address:</h6>
                     <div id="savedAddressBlock" style="display:none; margin-bottom: 5px;"></div>
-                    <button class="btn btn-sm btn-outline-primary mb-3" id="toggleAddressBtn" onclick="toggleNewAddressForm()">+ Add New Address</button>
-                    
-                    <div id="newAddressForm" style="display:none; border: 1px solid #eaeaea; padding: 12px; border-radius: 8px; margin-bottom: 15px; background: #f8f9fa;">
-                        <input type="text" id="addrHouse" class="form-control mb-2 form-control-sm" placeholder="House No. / Flat (Required)">
-                        <input type="text" id="addrFloor" class="form-control mb-2 form-control-sm" placeholder="Floor No.">
-                        <input type="text" id="addrStreet" class="form-control form-control-sm" placeholder="Street Name / Landmark (Required)">
+                    <button class="btn btn-sm btn-outline-primary mb-3" id="toggleAddressBtn"
+                        onclick="toggleNewAddressForm()">+ Add New Address</button>
+
+                    <div id="newAddressForm"
+                        style="display:none; border: 1px solid #eaeaea; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #fafbfc;">
+                        <input type="text" id="addrHouse" class="form-control mb-3"
+                            placeholder="House No. / Flat (Required)"
+                            style="border-radius:6px; box-shadow:inset 0 1px 3px rgba(0,0,0,0.05);">
+                        <input type="text" id="addrFloor" class="form-control mb-3" placeholder="Floor No."
+                            style="border-radius:6px; box-shadow:inset 0 1px 3px rgba(0,0,0,0.05);">
+                        <input type="text" id="addrStreet" class="form-control"
+                            placeholder="Street Name / Landmark (Required)"
+                            style="border-radius:6px; box-shadow:inset 0 1px 3px rgba(0,0,0,0.05);">
                     </div>
 
                     <!-- Date Section -->
                     <h6 class="font-weight-bold text-muted mb-2 mt-3" style="font-size: 0.95rem;">Preferred Date:</h6>
-                    <input type="date" id="bookingDate" class="form-control mb-3">
+                    <input type="date" id="bookingDate" class="form-control mb-3"
+                        style="border-radius:6px; cursor:pointer;" onchange="validateBookingDate()">
 
                     <!-- Time Section -->
                     <h6 class="font-weight-bold text-muted mb-2 mt-3" style="font-size: 0.95rem;">Choose time slot:</h6>
                     <div class="slot-grid" id="slotGridSelection">
-                        <div class="slot-item" onclick="selectSlot(this)">10:00 AM - 11:00 AM</div>
-                        <div class="slot-item" onclick="selectSlot(this)">11:00 AM - 12:00 PM</div>
-                        <div class="slot-item" onclick="selectSlot(this)">12:00 PM - 01:00 PM</div>
-                        <div class="slot-item" onclick="selectSlot(this)">01:00 PM - 02:00 PM</div>
-                        <div class="slot-item" onclick="selectSlot(this)">02:00 PM - 03:00 PM</div>
-                        <div class="slot-item" onclick="selectSlot(this)">03:00 PM - 04:00 PM</div>
-                        <div class="slot-item" onclick="selectSlot(this)">04:00 PM - 05:00 PM</div>
-                        <div class="slot-item" onclick="selectSlot(this)">05:00 PM - 06:00 PM</div>
-                        <div class="slot-item" onclick="selectSlot(this)">06:00 PM - 07:00 PM</div>
+                        <div class="slot-item" data-hour="10" onclick="selectSlot(this)">10:00 AM - 11:00 AM</div>
+                        <div class="slot-item" data-hour="11" onclick="selectSlot(this)">11:00 AM - 12:00 PM</div>
+                        <div class="slot-item" data-hour="12" onclick="selectSlot(this)">12:00 PM - 01:00 PM</div>
+                        <div class="slot-item" data-hour="13" onclick="selectSlot(this)">01:00 PM - 02:00 PM</div>
+                        <div class="slot-item" data-hour="14" onclick="selectSlot(this)">02:00 PM - 03:00 PM</div>
+                        <div class="slot-item" data-hour="15" onclick="selectSlot(this)">03:00 PM - 04:00 PM</div>
+                        <div class="slot-item" data-hour="16" onclick="selectSlot(this)">04:00 PM - 05:00 PM</div>
+                        <div class="slot-item" data-hour="17" onclick="selectSlot(this)">05:00 PM - 06:00 PM</div>
+                        <div class="slot-item" data-hour="18" onclick="selectSlot(this)">06:00 PM - 07:00 PM</div>
                     </div>
                 </div>
-                <div class="modal-footer border-top px-4 py-3 bg-white" style="flex-direction: column; align-items: stretch;">
+                <div class="modal-footer border-top px-4 py-3 bg-white"
+                    style="flex-direction: column; align-items: stretch;">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <span class="text-muted font-weight-bold">Estimate Total:</span>
-                        <h4 class="font-weight-bold mb-0" style="color: var(--primary);">₹<span id="slotModalTotalAmount">0</span></h4>
+                        <h4 class="font-weight-bold mb-0" style="color: var(--primary);">₹<span
+                                id="slotModalTotalAmount">0</span></h4>
                     </div>
-                    <button class="btn btn-success font-weight-bold py-3 text-uppercase" style="border-radius: 8px; font-size: 1.05rem; box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);" onclick="confirmWhatsAppBooking(this)">
-                        WhatsApp Us <i class="fab fa-whatsapp ml-2" style="font-size: 1.2rem;"></i>
+                    <button class="btn btn-success font-weight-bold py-3 text-uppercase"
+                        style="border-radius: 8px; font-size: 1.05rem; box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);"
+                        onclick="confirmWhatsAppBooking(this)">
+                        Confirm and WhatsApp Us <i class="fab fa-whatsapp ml-2" style="font-size: 1.2rem;"></i>
                     </button>
                 </div>
             </div>
@@ -906,16 +995,19 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 receipt-card shadow-lg" style="border-radius: 16px; overflow: hidden;">
                 <div class="modal-body p-0">
-                    <div class="receipt-header text-center p-4" style="background: #ffebee; border-bottom: 2px dashed #ffcdd2;">
+                    <div class="receipt-header text-center p-4"
+                        style="background: #ffebee; border-bottom: 2px dashed #ffcdd2;">
                         <div class="mb-3" style="animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
                             <i class="fas fa-map-marker-alt" style="font-size: 60px; color: #d32f2f;"></i>
                         </div>
                         <h4 class="font-weight-bold" style="color: #d32f2f;">We are Sorry</h4>
-                        <p class="mb-0 font-weight-bold" style="color: #c62828;">Service is not available for this location</p>
+                        <p class="mb-0 font-weight-bold" style="color: #c62828;">Service is not available for this
+                            location</p>
                         <p class="mt-2 text-muted" style="font-size: 0.9rem;">Try to book for another location.</p>
                     </div>
                     <div class="receipt-body p-4 bg-white text-center">
-                        <button class="btn btn-outline-danger px-4 py-2 font-weight-bold" style="border-radius: 8px;" onclick="$('#locationErrorModal').modal('hide'); getLocation();">
+                        <button class="btn btn-outline-danger px-4 py-2 font-weight-bold" style="border-radius: 8px;"
+                            onclick="$('#locationErrorModal').modal('hide'); getLocation();">
                             <i class="fas fa-search-location mr-2"></i>Change Location
                         </button>
                     </div>
@@ -925,12 +1017,15 @@
     </div>
 
     <!-- SUCCESS RECEIPT MODAL -->
-    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true"
+        data-backdrop="static">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 receipt-card shadow-lg" style="border-radius: 16px; overflow: hidden;">
                 <div class="modal-body p-0">
-                    <div class="receipt-header text-center p-4" style="background: #e8f5e9; border-bottom: 2px dashed #c8e6c9;">
-                        <div class="success-checkmark mb-3" style="animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+                    <div class="receipt-header text-center p-4"
+                        style="background: #e8f5e9; border-bottom: 2px dashed #c8e6c9;">
+                        <div class="success-checkmark mb-3"
+                            style="animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
                             <i class="fas fa-check-circle" style="font-size: 60px; color: #2e7d32;"></i>
                         </div>
                         <h4 class="font-weight-bold" style="color: #2e7d32;">Service Booked Successfully!</h4>
@@ -945,23 +1040,26 @@
                             <span class="text-muted">Customer</span>
                             <span class="font-weight-bold" id="receiptCustomerName">Name</span>
                         </div>
-                        
+
                         <h6 class="font-weight-bold mt-4 mb-3 text-muted">Services Booked:</h6>
                         <div id="receiptItemsList">
                             <!-- Items Injected Dynamically -->
                         </div>
-                        
+
                         <div class="d-flex justify-content-between mt-4 pt-3" style="border-top: 2px dashed #ddd;">
                             <h5 class="font-weight-bold">Amount Paid</h5>
-                            <h5 class="font-weight-bold" style="color: var(--primary);">₹<span id="receiptTotalAmount">0</span></h5>
+                            <h5 class="font-weight-bold" style="color: var(--primary);">₹<span
+                                    id="receiptTotalAmount">0</span></h5>
                         </div>
                     </div>
                     <div class="receipt-footer text-center p-4" style="background: #f8f9fa;">
                         <p class="text-muted mb-3" style="font-size: 0.95rem;">Need help with your booking?</p>
-                        <a href="tel:8010687985" class="btn btn-primary btn-block py-3 font-weight-bold" style="border-radius: 8px; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(56, 182, 255, 0.3);">
+                        <a href="tel:8010687985" class="btn btn-primary btn-block py-3 font-weight-bold"
+                            style="border-radius: 8px; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(56, 182, 255, 0.3);">
                             <i class="fas fa-phone-alt mr-2"></i> Call Support: 8010687985
                         </a>
-                        <button class="btn btn-link text-muted mt-3" onclick="location.reload();">Close & Return to Home</button>
+                        <button class="btn btn-link text-muted mt-3" onclick="location.reload();">Close & Return to
+                            Home</button>
                     </div>
                 </div>
             </div>
