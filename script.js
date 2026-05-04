@@ -546,6 +546,22 @@ function updateCartUI() {
     let total = 0;
     let totalItems = 0;
 
+    // Calculate totalItems for Floating Button BEFORE early return
+    for (let item in cart) {
+        totalItems += cart[item].count;
+    }
+
+    // Manage Floating Cart Button (Mobile)
+    const floatingBtn = document.getElementById("floatingCartBtn");
+    if (floatingBtn) {
+        if (totalItems > 0) {
+            floatingBtn.style.display = "flex";
+            document.getElementById("floatingCartCount").innerText = totalItems;
+        } else {
+            floatingBtn.style.display = "none";
+        }
+    }
+
     if (Object.keys(cart).length === 0) {
         cartEmpty.style.display = "block";
         totalPrice.innerText = "0";
@@ -643,11 +659,19 @@ function proceedToCheckout() {
 
     // Hide Services, Show Checkout
     document.querySelector('.services-section').style.display = 'none';
+    if (document.querySelector('.hero-section')) document.querySelector('.hero-section').style.display = 'none';
+    if (document.querySelector('.offers-section')) document.querySelector('.offers-section').style.display = 'none';
+    if (document.querySelector('.quick-book-section')) document.querySelector('.quick-book-section').style.display = 'none';
     if (document.querySelector('.why-section')) document.querySelector('.why-section').style.display = 'none';
     if (document.querySelector('.how-works-section')) document.querySelector('.how-works-section').style.display = 'none';
     if (document.querySelector('.testimonial-section')) document.querySelector('.testimonial-section').style.display = 'none';
 
     document.getElementById('checkoutSection').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Explicitly hide floating cart button
+    const floatingBtn = document.getElementById("floatingCartBtn");
+    if(floatingBtn) floatingBtn.style.display = 'none';
 
     // Refresh Dynamic View State dynamically
     updateCheckoutUI();
@@ -677,12 +701,18 @@ function backToServices() {
     // Hide Checkout, Show Services
     document.getElementById('checkoutSection').style.display = 'none';
     document.querySelector('.services-section').style.display = 'block';
+    if (document.querySelector('.hero-section')) document.querySelector('.hero-section').style.display = 'block';
+    if (document.querySelector('.offers-section')) document.querySelector('.offers-section').style.display = 'block';
+    if (document.querySelector('.quick-book-section')) document.querySelector('.quick-book-section').style.display = 'block';
     if (document.querySelector('.why-section')) document.querySelector('.why-section').style.display = 'block';
     if (document.querySelector('.how-works-section')) document.querySelector('.how-works-section').style.display = 'block';
     if (document.querySelector('.testimonial-section')) document.querySelector('.testimonial-section').style.display = 'block';
 
     // Scroll smoothly to services
     document.querySelector('.services-section').scrollIntoView({ behavior: 'smooth' });
+    
+    // Refresh floating cart visibility naturally
+    updateCartUI();
 }
 
 // SLOT BOOKING MODAL & WHATSAPP REDIRECT ARCHITECTURE
@@ -956,3 +986,332 @@ function completeBooking(paymentId) {
     // Automatically redirect back to the home view underneath the overlay
     backToServices();
 }
+
+function renderBookingsTab() {
+    const upcomingTab = document.getElementById('upcoming');
+    const completedTab = document.getElementById('completed');
+    if(!completedTab) return;
+    
+    // Ensure upcoming tab always shows empty state since we are moving bookings to completed
+    if (upcomingTab) {
+        upcomingTab.innerHTML = `
+            <i class="far fa-calendar-times" style="font-size: 60px; color: #ddd; margin-bottom: 20px;"></i>
+            <h5 class="font-weight-bold text-muted">No upcoming bookings</h5>
+            <p class="text-muted" style="font-size: 0.9rem;">Your bookings will appear here.</p>
+        `;
+    }
+
+    if (userBookings && userBookings.length > 0) {
+        let htmlContent = '';
+        userBookings.forEach(booking => {
+            htmlContent += `
+                <div class="card mb-3 shadow-sm border-0" style="border-radius: 12px; text-align: left;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="font-weight-bold mb-0" style="color:var(--primary);">${booking.id}</h6>
+                            <span class="badge badge-success text-white">Confirmed</span>
+                        </div>
+                        <p class="text-muted mb-1" style="font-size: 0.9rem;"><i class="far fa-calendar-alt mr-2"></i>${booking.date}</p>
+                        <p class="font-weight-bold mb-2">₹${booking.total}</p>
+                        <p class="mb-0" style="font-size: 0.85rem; color: #555;">${booking.service}</p>
+                        <button class="btn btn-sm btn-outline-primary mt-3 w-100" style="border-radius: 8px;" onclick="viewBill('${booking.id}')">View Bill</button>
+                    </div>
+                </div>
+            `;
+        });
+        completedTab.innerHTML = htmlContent;
+    } else {
+        completedTab.innerHTML = `
+            <i class="fas fa-check-circle" style="font-size: 60px; color: #ddd; margin-bottom: 20px;"></i>
+            <h5 class="font-weight-bold text-muted">No completed bookings</h5>
+        `;
+    }
+}
+
+// SPA View Routing (Mobile Only)
+function switchView(viewId, element) {
+    // Hide all main views
+    document.getElementById('homeView').style.display = 'none';
+    document.getElementById('bookingsView').style.display = 'none';
+    document.getElementById('packagesView').style.display = 'none';
+    
+    // Show selected view
+    document.getElementById(viewId).style.display = 'block';
+    window.scrollTo(0, 0);
+
+    // Render bookings if it's bookings view
+    if (viewId === 'bookingsView') {
+        renderBookingsTab();
+    } else if (viewId === 'homeView') {
+        // Ensure all sections are unhidden if user was previously in checkout
+        backToServices();
+    }
+    
+    // Update active nav class
+    if (element) {
+        document.querySelectorAll('.bottom-nav-item').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+    }
+    
+    // Explicitly hide floating cart button when not on home view
+    const floatingBtn = document.getElementById("floatingCartBtn");
+    if(floatingBtn) {
+        if(viewId !== 'homeView') {
+            floatingBtn.style.display = 'none';
+        } else {
+            updateCartUI(); // Restore cart button visibility logic if returning to home
+        }
+    }
+}
+
+// ==========================================
+// NEW MOBILE UI LOGIC
+// ==========================================
+
+let currentCleaningMode = 'regular';
+
+function toggleCleaningMode(mode) {
+    currentCleaningMode = mode;
+    
+    document.getElementById('regularModeBtn').classList.remove('active');
+    document.getElementById('deepModeBtn').classList.remove('active');
+    
+    if (mode === 'regular') {
+        document.getElementById('regularModeBtn').classList.add('active');
+        document.getElementById('regularModeBtn').style.background = '#fff';
+        document.getElementById('regularModeBtn').style.color = '#004aad';
+        document.getElementById('regularModeBtn').style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+        
+        document.getElementById('deepModeBtn').style.background = 'transparent';
+        document.getElementById('deepModeBtn').style.color = '#888';
+        document.getElementById('deepModeBtn').style.boxShadow = 'none';
+        
+        // Reset Prices to Regular
+        document.getElementById('price-utensils').innerText = '₹89';
+        document.getElementById('price-bathroom').innerText = '₹99';
+        document.getElementById('price-dusting').innerText = '₹79';
+        document.getElementById('price-mopping').innerText = '₹79';
+        document.getElementById('price-fan').innerText = '₹49';
+        document.getElementById('price-window').innerText = '₹49';
+        
+    } else {
+        document.getElementById('deepModeBtn').classList.add('active');
+        document.getElementById('deepModeBtn').style.background = '#fff';
+        document.getElementById('deepModeBtn').style.color = '#004aad';
+        document.getElementById('deepModeBtn').style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+        
+        document.getElementById('regularModeBtn').style.background = 'transparent';
+        document.getElementById('regularModeBtn').style.color = '#888';
+        document.getElementById('regularModeBtn').style.boxShadow = 'none';
+        
+        // Increase Prices for Deep Clean (+₹50 markup example)
+        document.getElementById('price-utensils').innerText = '₹139';
+        document.getElementById('price-bathroom').innerText = '₹149';
+        document.getElementById('price-dusting').innerText = '₹129';
+        document.getElementById('price-mopping').innerText = '₹129';
+        document.getElementById('price-fan').innerText = '₹99';
+        document.getElementById('price-window').innerText = '₹99';
+    }
+}
+
+function addFixedService(rawName, basePrice) {
+    let finalPrice = basePrice;
+    if (currentCleaningMode === 'deep') finalPrice += 50; // Dynamic Deep Clean Markup
+
+    const cartItemId = rawName + (currentCleaningMode === 'deep' ? ' (Deep Clean)' : ' (Regular)');
+    
+    if (!cart[cartItemId]) {
+        cart[cartItemId] = { rawName: rawName, count: 1, price: finalPrice, timeLimit: 'N/A' };
+    } else {
+        cart[cartItemId].count++;
+    }
+    
+    // Animate Button
+    showToast("Added", rawName + ' added to cart!', true);
+    updateCartUI();
+}
+
+function addQuickBook(timeLabel, price) {
+    const cartItemId = 'Quick Book | ' + timeLabel;
+    
+    if (!cart[cartItemId]) {
+        cart[cartItemId] = { rawName: 'Quick Book', count: 1, price: price, timeLimit: timeLabel };
+    } else {
+        cart[cartItemId].count++;
+    }
+    
+    showToast("Added", 'Quick Book (' + timeLabel + ') added to cart!', true);
+    updateCartUI();
+}
+
+
+// ==========================================
+// NEW GRID COUNTER LOGIC
+// ==========================================
+
+function addFixedServiceFromGrid(btn, rawName, basePrice) {
+    let finalPrice = basePrice;
+    if (currentCleaningMode === 'deep') finalPrice += 50;
+
+    const cartItemId = rawName + (currentCleaningMode === 'deep' ? ' (Deep Clean)' : ' (Regular)');
+    
+    if (!cart[cartItemId]) {
+        cart[cartItemId] = { rawName: rawName, count: 1, price: finalPrice, timeLimit: 'N/A' };
+    } else {
+        cart[cartItemId].count++;
+    }
+    
+    showToast("Success", rawName + ' added to cart!', true);
+    updateCartUI();
+    syncGridCounters();
+}
+
+function updateCountFromGrid(btn, rawName, change) {
+    const cartItemId = rawName + (currentCleaningMode === 'deep' ? ' (Deep Clean)' : ' (Regular)');
+    
+    if (cart[cartItemId]) {
+        cart[cartItemId].count += change;
+        if (cart[cartItemId].count <= 0) {
+            delete cart[cartItemId];
+        }
+    }
+    updateCartUI();
+    syncGridCounters();
+}
+
+function syncGridCounters() {
+    const gridItems = document.querySelectorAll('.service-grid-item');
+    gridItems.forEach(item => {
+        const rawName = item.getAttribute('data-name');
+        const cartItemId = rawName + (currentCleaningMode === 'deep' ? ' (Deep Clean)' : ' (Regular)');
+        
+        const imgContainer = item.querySelector('.img-container');
+        if(!imgContainer) return;
+        
+        const addBtn = imgContainer.querySelector('.add-btn-small');
+        const counterPill = imgContainer.querySelector('.counter-pill-grid');
+        
+        if (cart[cartItemId] && cart[cartItemId].count > 0) {
+            if(addBtn) addBtn.style.display = 'none';
+            if(counterPill) {
+                counterPill.style.display = 'flex';
+                counterPill.querySelector('span').innerText = cart[cartItemId].count;
+            }
+        } else {
+            if(addBtn) addBtn.style.display = 'flex';
+            if(counterPill) counterPill.style.display = 'none';
+        }
+    });
+}
+
+// ==========================================
+// QUICK BOOK COUNTER LOGIC
+// ==========================================
+
+function addQuickBookFromGrid(btn, rawName, basePrice) {
+    const cartItemId = "Quick Book - " + rawName;
+    
+    if (!cart[cartItemId]) {
+        cart[cartItemId] = { rawName: rawName, count: 1, price: basePrice, timeLimit: 'N/A' };
+    } else {
+        cart[cartItemId].count++;
+    }
+    
+    showToast("Success", rawName + ' added to cart!', true);
+    updateCartUI();
+}
+
+function updateCountFromQuickBook(btn, rawName, change) {
+    const cartItemId = "Quick Book - " + rawName;
+    
+    if (cart[cartItemId]) {
+        cart[cartItemId].count += change;
+        if (cart[cartItemId].count <= 0) {
+            delete cart[cartItemId];
+        }
+    }
+    updateCartUI();
+}
+
+function syncQuickBookCounters() {
+    const quickItems = document.querySelectorAll('.quick-card');
+    quickItems.forEach(item => {
+        const rawName = item.getAttribute('data-name');
+        if(!rawName) return;
+        const cartItemId = "Quick Book - " + rawName;
+        
+        const addBtn = item.querySelector('.add-btn-small');
+        const counterPill = item.querySelector('.counter-pill-grid');
+        
+        if (cart[cartItemId] && cart[cartItemId].count > 0) {
+            if(addBtn) addBtn.style.display = 'none';
+            if(counterPill) {
+                counterPill.style.display = 'flex';
+                counterPill.querySelector('span').innerText = cart[cartItemId].count;
+            }
+        } else {
+            if(addBtn) addBtn.style.display = 'flex';
+            if(counterPill) counterPill.style.display = 'none';
+        }
+    });
+}
+
+// Ensure counters stay synced when cart updates from right panel
+const originalUpdateCartUI = updateCartUI;
+updateCartUI = function() {
+    originalUpdateCartUI();
+    if(typeof syncGridCounters === 'function') syncGridCounters();
+    if(typeof syncQuickBookCounters === 'function') syncQuickBookCounters();
+    
+    // Ensure floating cart button is only visible on the home view
+    const floatingBtn = document.getElementById("floatingCartBtn");
+    const homeView = document.getElementById("homeView");
+    if(floatingBtn && homeView && homeView.style.display === "none") {
+        floatingBtn.style.display = "none";
+    }
+}
+
+// INTERSECTION OBSERVER FOR FLOATING CART BUTTON
+document.addEventListener('DOMContentLoaded', () => {
+    const cartSection = document.querySelector('.services-right');
+    const floatingBtn = document.getElementById('floatingCartBtn');
+    
+    if (cartSection && floatingBtn) {
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                // Cart is in view, hide floating button
+                floatingBtn.style.opacity = '0';
+                floatingBtn.style.pointerEvents = 'none';
+            } else {
+                // Cart is not in view, show floating button (if items > 0)
+                floatingBtn.style.opacity = '1';
+                floatingBtn.style.pointerEvents = 'auto';
+            }
+        }, { threshold: 0.1 });
+        
+        observer.observe(cartSection);
+    }
+    
+    // DYNAMIC OFFER DOTS
+    const slider = document.getElementById("offersSlider");
+    const dots = document.querySelectorAll(".offer-dot");
+    
+    if (slider && dots.length > 0) {
+        slider.addEventListener("scroll", () => {
+            // Calculate active index based on scroll position
+            const cardWidth = slider.scrollWidth / dots.length;
+            const index = Math.round(slider.scrollLeft / cardWidth);
+            
+            // Update dots styles
+            dots.forEach((dot, i) => {
+                if (i === index) {
+                    dot.style.width = "20px";
+                    dot.style.background = "#333";
+                } else {
+                    dot.style.width = "6px";
+                    dot.style.background = "#ccc";
+                }
+            });
+        });
+    }
+});
