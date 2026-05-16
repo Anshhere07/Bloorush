@@ -1176,7 +1176,7 @@ function updateServicePrice(selectElem, rawName) {
     const container = selectElem.closest('.service-grid-item');
     if(container) {
         const priceDisplay = container.querySelector('.service-display-price');
-        if(priceDisplay) priceDisplay.innerText = price;
+        if(priceDisplay) priceDisplay.innerText = '₹' + price;
     }
     
     // Resync counters because duration changed
