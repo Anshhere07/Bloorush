@@ -661,8 +661,7 @@ function proceedToCheckout() {
     document.querySelector('.services-section').style.display = 'none';
     if (document.querySelector('.hero-section')) document.querySelector('.hero-section').style.display = 'none';
     if (document.querySelector('.offers-section')) document.querySelector('.offers-section').style.display = 'none';
-    if (document.querySelector('.quick-book-section')) document.querySelector('.quick-book-section').style.display = 'none';
-    if (document.querySelector('.why-section')) document.querySelector('.why-section').style.display = 'none';
+        if (document.querySelector('.why-section')) document.querySelector('.why-section').style.display = 'none';
     if (document.querySelector('.how-works-section')) document.querySelector('.how-works-section').style.display = 'none';
     if (document.querySelector('.testimonial-section')) document.querySelector('.testimonial-section').style.display = 'none';
 
@@ -703,8 +702,7 @@ function backToServices() {
     document.querySelector('.services-section').style.display = 'block';
     if (document.querySelector('.hero-section')) document.querySelector('.hero-section').style.display = 'block';
     if (document.querySelector('.offers-section')) document.querySelector('.offers-section').style.display = 'block';
-    if (document.querySelector('.quick-book-section')) document.querySelector('.quick-book-section').style.display = 'block';
-    if (document.querySelector('.why-section')) document.querySelector('.why-section').style.display = 'block';
+        if (document.querySelector('.why-section')) document.querySelector('.why-section').style.display = 'block';
     if (document.querySelector('.how-works-section')) document.querySelector('.how-works-section').style.display = 'block';
     if (document.querySelector('.testimonial-section')) document.querySelector('.testimonial-section').style.display = 'block';
 
@@ -747,7 +745,8 @@ function toggleNewAddressForm() {
 function openSlotBooking() {
     // Geofence Interceptor
     const userLocation = (document.getElementById("locationText").innerText || "").toLowerCase();
-    const isAvailable = userLocation.includes("nagpur") || userLocation.includes("shahjahanpur");
+    const allowedLocations = ["nagpur", "narendra nagar", "manish nagar", "chhatrepathi square", "shahjahanpur"];
+    const isAvailable = allowedLocations.some(loc => userLocation.includes(loc));
     
     if (!isAvailable) {
         $('#locationErrorModal').modal('show');
@@ -1076,6 +1075,9 @@ function toggleCleaningMode(mode) {
     document.getElementById('regularModeBtn').classList.remove('active');
     document.getElementById('deepModeBtn').classList.remove('active');
     
+    const grid = document.querySelector('.services-grid');
+    const placeholder = document.getElementById('deepCleanPlaceholder');
+    
     if (mode === 'regular') {
         document.getElementById('regularModeBtn').classList.add('active');
         document.getElementById('regularModeBtn').style.background = '#fff';
@@ -1086,14 +1088,14 @@ function toggleCleaningMode(mode) {
         document.getElementById('deepModeBtn').style.color = '#888';
         document.getElementById('deepModeBtn').style.boxShadow = 'none';
         
-        // Reset Prices to Regular
-        document.getElementById('price-utensils').innerText = '₹89';
-        document.getElementById('price-bathroom').innerText = '₹99';
-        document.getElementById('price-dusting').innerText = '₹79';
-        document.getElementById('price-mopping').innerText = '₹79';
-        document.getElementById('price-fan').innerText = '₹49';
-        document.getElementById('price-window').innerText = '₹49';
+        if(grid) grid.style.display = 'grid';
+        if(placeholder) placeholder.style.display = 'none';
         
+        // Trigger all selects to restore correct price from dropdowns
+        const selects = document.querySelectorAll('.service-duration-select');
+        selects.forEach(s => s.dispatchEvent(new Event('change')));
+        
+        if (typeof syncGridCounters === "function") syncGridCounters();
     } else {
         document.getElementById('deepModeBtn').classList.add('active');
         document.getElementById('deepModeBtn').style.background = '#fff';
@@ -1104,13 +1106,8 @@ function toggleCleaningMode(mode) {
         document.getElementById('regularModeBtn').style.color = '#888';
         document.getElementById('regularModeBtn').style.boxShadow = 'none';
         
-        // Increase Prices for Deep Clean (+₹50 markup example)
-        document.getElementById('price-utensils').innerText = '₹139';
-        document.getElementById('price-bathroom').innerText = '₹149';
-        document.getElementById('price-dusting').innerText = '₹129';
-        document.getElementById('price-mopping').innerText = '₹129';
-        document.getElementById('price-fan').innerText = '₹99';
-        document.getElementById('price-window').innerText = '₹99';
+        if(grid) grid.style.display = 'none';
+        if(placeholder) placeholder.style.display = 'block';
     }
 }
 
@@ -1166,6 +1163,79 @@ function addFixedServiceFromGrid(btn, rawName, basePrice) {
     syncGridCounters();
 }
 
+
+// ==========================================
+// DYNAMIC PRICING LOGIC
+// ==========================================
+
+function updateServicePrice(selectElem, rawName) {
+    const selectedOption = selectElem.options[selectElem.selectedIndex];
+    const price = selectedOption.getAttribute('data-price');
+    
+    // Update displayed price
+    const container = selectElem.closest('.service-grid-item');
+    if(container) {
+        const priceDisplay = container.querySelector('.service-display-price');
+        if(priceDisplay) priceDisplay.innerText = price;
+    }
+    
+    // Resync counters because duration changed
+    syncGridCounters();
+}
+
+function addDynamicService(btn, rawName) {
+    const container = btn.closest('.service-grid-item');
+    const selectElem = container.querySelector('.service-duration-select');
+    
+    let duration = '';
+    let basePrice = 0;
+    
+    if(selectElem) {
+        const selectedOption = selectElem.options[selectElem.selectedIndex];
+        duration = selectedOption.value;
+        basePrice = parseInt(selectedOption.getAttribute('data-price'));
+    } else {
+        // Fallback for any static items
+        basePrice = parseInt(container.querySelector('.service-display-price').innerText);
+    }
+    
+    const cleaningModeSuffix = currentCleaningMode === 'deep' ? ' (Deep Clean)' : ' (Regular)';
+    const cartItemId = rawName + (duration ? " (" + duration + ")" : "") + cleaningModeSuffix;
+    
+    if (!cart[cartItemId]) {
+        cart[cartItemId] = { rawName: rawName + (duration ? " (" + duration + ")" : ""), count: 1, price: basePrice, timeLimit: duration };
+    } else {
+        cart[cartItemId].count++;
+    }
+    
+    if (typeof showToast === "function") showToast("Success", rawName + " (" + duration + ") added to cart!", true);
+    else alert(rawName + " (" + duration + ") added to cart!");
+    updateCartUI();
+    syncGridCounters();
+}
+
+function updateCountFromDynamicGrid(btn, rawName, change) {
+    const container = btn.closest('.service-grid-item');
+    const selectElem = container.querySelector('.service-duration-select');
+    
+    let duration = '';
+    if(selectElem) {
+        duration = selectElem.options[selectElem.selectedIndex].value;
+    }
+    
+    const cleaningModeSuffix = currentCleaningMode === 'deep' ? ' (Deep Clean)' : ' (Regular)';
+    const cartItemId = rawName + (duration ? " (" + duration + ")" : "") + cleaningModeSuffix;
+    
+    if (cart[cartItemId]) {
+        cart[cartItemId].count += change;
+        if (cart[cartItemId].count <= 0) {
+            delete cart[cartItemId];
+        }
+    }
+    updateCartUI();
+    syncGridCounters();
+}
+
 function updateCountFromGrid(btn, rawName, change) {
     const cartItemId = rawName + (currentCleaningMode === 'deep' ? ' (Deep Clean)' : ' (Regular)');
     
@@ -1183,7 +1253,14 @@ function syncGridCounters() {
     const gridItems = document.querySelectorAll('.service-grid-item');
     gridItems.forEach(item => {
         const rawName = item.getAttribute('data-name');
-        const cartItemId = rawName + (currentCleaningMode === 'deep' ? ' (Deep Clean)' : ' (Regular)');
+        const selectElem = item.querySelector('.service-duration-select');
+        let duration = '';
+        if(selectElem) {
+            duration = selectElem.options[selectElem.selectedIndex].value;
+        }
+        
+        const suffix = duration ? " (" + duration + ")" : "";
+        const cartItemId = rawName + suffix + (currentCleaningMode === 'deep' ? ' (Deep Clean)' : ' (Regular)');
         
         const imgContainer = item.querySelector('.img-container');
         if(!imgContainer) return;
@@ -1196,6 +1273,11 @@ function syncGridCounters() {
             if(counterPill) {
                 counterPill.style.display = 'flex';
                 counterPill.querySelector('span').innerText = cart[cartItemId].count;
+                // Update onclick for counter pill to use dynamic version
+                const minusBtn = counterPill.querySelector('button:first-child');
+                const plusBtn = counterPill.querySelector('button:last-child');
+                if(minusBtn) minusBtn.setAttribute('onclick', `updateCountFromDynamicGrid(this, '${rawName}', -1)`);
+                if(plusBtn) plusBtn.setAttribute('onclick', `updateCountFromDynamicGrid(this, '${rawName}', 1)`);
             }
         } else {
             if(addBtn) addBtn.style.display = 'flex';
@@ -1204,65 +1286,20 @@ function syncGridCounters() {
     });
 }
 
-// ==========================================
-// QUICK BOOK COUNTER LOGIC
-// ==========================================
 
-function addQuickBookFromGrid(btn, rawName, basePrice) {
-    const cartItemId = "Quick Book - " + rawName;
-    
-    if (!cart[cartItemId]) {
-        cart[cartItemId] = { rawName: rawName, count: 1, price: basePrice, timeLimit: 'N/A' };
-    } else {
-        cart[cartItemId].count++;
-    }
-    
-    showToast("Success", rawName + ' added to cart!', true);
-    updateCartUI();
-}
 
-function updateCountFromQuickBook(btn, rawName, change) {
-    const cartItemId = "Quick Book - " + rawName;
-    
-    if (cart[cartItemId]) {
-        cart[cartItemId].count += change;
-        if (cart[cartItemId].count <= 0) {
-            delete cart[cartItemId];
-        }
-    }
-    updateCartUI();
-}
 
-function syncQuickBookCounters() {
-    const quickItems = document.querySelectorAll('.quick-card');
-    quickItems.forEach(item => {
-        const rawName = item.getAttribute('data-name');
-        if(!rawName) return;
-        const cartItemId = "Quick Book - " + rawName;
-        
-        const addBtn = item.querySelector('.add-btn-small');
-        const counterPill = item.querySelector('.counter-pill-grid');
-        
-        if (cart[cartItemId] && cart[cartItemId].count > 0) {
-            if(addBtn) addBtn.style.display = 'none';
-            if(counterPill) {
-                counterPill.style.display = 'flex';
-                counterPill.querySelector('span').innerText = cart[cartItemId].count;
-            }
-        } else {
-            if(addBtn) addBtn.style.display = 'flex';
-            if(counterPill) counterPill.style.display = 'none';
-        }
-    });
-}
+
+
+
+
 
 // Ensure counters stay synced when cart updates from right panel
 const originalUpdateCartUI = updateCartUI;
 updateCartUI = function() {
     originalUpdateCartUI();
     if(typeof syncGridCounters === 'function') syncGridCounters();
-    if(typeof syncQuickBookCounters === 'function') syncQuickBookCounters();
-    
+        
     // Ensure floating cart button is only visible on the home view
     const floatingBtn = document.getElementById("floatingCartBtn");
     const homeView = document.getElementById("homeView");
@@ -1315,3 +1352,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+
+function scrollToCleaningMode() {
+    if(document.getElementById('homeView').style.display === 'none') {
+        const homeNavBtn = document.querySelector('.bottom-nav-item[onclick*="homeView"]');
+        if (typeof switchView === 'function') {
+            switchView('homeView', homeNavBtn);
+        }
+    }
+    
+    setTimeout(() => {
+        const section = document.getElementById('cleaningModeSection');
+        if(section) {
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, 100);
+}
