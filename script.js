@@ -1372,3 +1372,29 @@ function scrollToCleaningMode() {
         }
     }, 100);
 }
+
+function bookFirstOrderOffer() {
+    let userName = "";
+    
+    // Attempt to get user name from currentUser variable or localStorage
+    try {
+        if (typeof currentUser !== 'undefined' && currentUser && currentUser.name) {
+            userName = currentUser.name;
+        } else {
+            const localUser = JSON.parse(localStorage.getItem('bloorush_currentUser'));
+            if(localUser && localUser.name) {
+                userName = localUser.name;
+            }
+        }
+    } catch(e) {}
+    
+    let message = "";
+    if (userName) {
+        message = `Hi, I am ${userName}. This is my first booking Service. I would like to avail the ₹49 First Order offer!`;
+    } else {
+        message = `Hi! This is my first booking Service. I would like to avail the ₹49 First Order offer!`;
+    }
+    
+    const encodedMessage = encodeURIComponent(message);
+    window.open(`https://wa.me/917843021334?text=${encodedMessage}`, '_blank');
+}
