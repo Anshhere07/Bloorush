@@ -224,7 +224,7 @@ function updateAuthUI() {
         footerText.innerText = "Don't have an account?";
         toggleBtn.innerText = "Sign Up";
         nameField.style.display = "none";
-        googleBtnText.innerText = "Sign in with Google";
+        if(googleBtnText) googleBtnText.innerText = "Sign in with Google";
     } else {
         title.innerText = "Create Account";
         subtitle.innerText = "Join Bloorush today";
@@ -232,7 +232,7 @@ function updateAuthUI() {
         footerText.innerText = "Already have an account?";
         toggleBtn.innerText = "Login";
         nameField.style.display = "flex";
-        googleBtnText.innerText = "Sign up with Google";
+        if(googleBtnText) googleBtnText.innerText = "Sign up with Google";
     }
 }
 
@@ -361,20 +361,23 @@ function initGoogleClient() {
     });
 }
 
-document.querySelector('.google-btn').addEventListener('click', function (e) {
-    e.preventDefault();
-    if (GOOGLE_CLIENT_ID === "YOUR_GOOGLE_CLIENT_ID_HERE.apps.googleusercontent.com") {
-        alert("Developer Note:\n\nYou must replace 'YOUR_GOOGLE_CLIENT_ID_HERE' in script.js with your actual Google OAuth Client ID to test the real login!");
-        return;
-    }
+const googleBtnElem = document.querySelector('.google-btn');
+if (googleBtnElem) {
+    googleBtnElem.addEventListener('click', function (e) {
+        e.preventDefault();
+        if (GOOGLE_CLIENT_ID === "YOUR_GOOGLE_CLIENT_ID_HERE.apps.googleusercontent.com") {
+            alert("Developer Note:\n\nYou must replace 'YOUR_GOOGLE_CLIENT_ID_HERE' in script.js with your actual Google OAuth Client ID to test the real login!");
+            return;
+        }
 
-    if (tokenClient) {
-        // Triggers the Google Login Popup
-        tokenClient.requestAccessToken();
-    } else {
-        alert("Google Identity Services not loaded yet. Please try again.");
-    }
-});
+        if (tokenClient) {
+            // Triggers the Google Login Popup
+            tokenClient.requestAccessToken();
+        } else {
+            alert("Google Identity Services not loaded yet. Please try again.");
+        }
+    });
+}
 
 function fetchGoogleUserProfile(accessToken) {
     // Fetch user details like email and name from Google
@@ -905,7 +908,7 @@ ${finalAddress}
 Please confirm my booking!`;
 
     const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/918010687985?text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/917843021334?text=${encodedMessage}`;
 
     const originalText = btn.innerHTML;
     btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Redirecting to WhatsApp...';
