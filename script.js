@@ -720,6 +720,26 @@ function backToServices() {
 let selectedTimeSlot = null;
 
 // UTILS FOR ADDRESS
+
+function loadSavedPhones() {
+    return JSON.parse(localStorage.getItem('bloorush_savedPhones') || "[]");
+}
+
+function saveNewPhone(phone) {
+    let phones = loadSavedPhones();
+    if (!phones.includes(phone)) {
+        phones.unshift(phone); // Add to top
+        if (phones.length > 5) phones.pop(); // Keep max 5
+        localStorage.setItem('bloorush_savedPhones', JSON.stringify(phones));
+    }
+}
+
+function toggleNewPhoneForm() {
+    const form = document.getElementById('newPhoneForm');
+    const isHidden = form.style.display === 'none';
+    form.style.display = isHidden ? 'block' : 'none';
+}
+
 function loadSavedAddresses() {
     if(!currentUser) return [];
     let addrs = localStorage.getItem('bloorush_userAddresses_' + currentUser.email);
@@ -794,6 +814,31 @@ function openSlotBooking() {
         document.getElementById('newAddressForm').style.display = 'block';
         toggleAddrBtn.style.display = 'none'; // Force they write an address
     }
+
+    // Setup Phone UI
+    document.getElementById('newPhoneForm').style.display = 'none';
+    const savedPhoneBlock = document.getElementById('savedPhoneBlock');
+    const togglePhoneBtn = document.getElementById('togglePhoneBtn');
+    const phones = loadSavedPhones();
+    
+    if (phones.length > 0) {
+        let h = '';
+        phones.forEach((ph, idx) => {
+            h += `<div class="form-check mb-1">
+                    <input class="form-check-input" type="radio" name="savedPhoneRadio" id="phoneRadio${idx}" value="${ph}" ${idx===0 ? 'checked' : ''}>
+                    <label class="form-check-label text-muted" style="font-size: 0.85rem;" for="phoneRadio${idx}">${ph}</label>
+                  </div>`;
+        });
+        savedPhoneBlock.innerHTML = h;
+        savedPhoneBlock.style.display = 'block';
+        togglePhoneBtn.innerText = "+ Add New Number";
+        togglePhoneBtn.style.display = 'inline-block';
+    } else {
+        savedPhoneBlock.style.display = 'none';
+        document.getElementById('newPhoneForm').style.display = 'block';
+        togglePhoneBtn.style.display = 'none'; // Force they write a phone
+    }
+
 
     // Default Date & Temporal Limits
     const dateInput = document.getElementById('bookingDate');
@@ -877,6 +922,27 @@ function confirmWhatsAppBooking(btn) {
         }
     }
 
+    
+    // Extract Phone
+    let finalPhone = "";
+    if (document.getElementById('newPhoneForm').style.display === 'block') {
+        const ph = document.getElementById('contactPhone').value.trim();
+        if(!ph) {
+            alert("Mobile Number is required!");
+            return;
+        }
+        finalPhone = ph;
+        saveNewPhone(finalPhone);
+    } else {
+        const selectedRadio = document.querySelector('input[name="savedPhoneRadio"]:checked');
+        if(selectedRadio){
+            finalPhone = selectedRadio.value;
+        } else {
+            alert("Please provide or select a mobile number.");
+            return;
+        }
+    }
+
     // Extract Date
     const chosenDate = document.getElementById('bookingDate').value;
     if(!chosenDate) {
@@ -898,7 +964,7 @@ ${itemsList.join('\n\n')}
 
 *Total Estimate:* ₹${totalAmount}
 
-*Customer Location:*
+*Customer Contact:* ${finalPhone}\n*Customer Location:*
 ${finalAddress}
 *Map Link:* https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(finalAddress)}
 

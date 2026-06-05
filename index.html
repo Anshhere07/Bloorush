@@ -1008,6 +1008,20 @@
                     <input type="date" id="bookingDate" class="form-control mb-3"
                         style="border-radius:6px; cursor:pointer;" onchange="validateBookingDate()">
 
+                    
+                    <!-- Phone Section -->
+                    <h6 class="font-weight-bold text-muted mb-2 mt-3" style="font-size: 0.95rem;">Contact Number:</h6>
+                    <div id="savedPhoneBlock" style="display:none; margin-bottom: 5px;"></div>
+                    <button class="btn btn-sm btn-outline-primary mb-3" id="togglePhoneBtn"
+                        onclick="toggleNewPhoneForm()">+ Add New Number</button>
+
+                    <div id="newPhoneForm"
+                        style="display:none; border: 1px solid #eaeaea; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #fafbfc;">
+                        <input type="tel" id="contactPhone" class="form-control"
+                            placeholder="Mobile Number (10 digits)" pattern="[0-9]{10}"
+                            style="border-radius:6px; box-shadow:inset 0 1px 3px rgba(0,0,0,0.05);">
+                    </div>
+
                     <!-- Time Section -->
                     <h6 class="font-weight-bold text-muted mb-2 mt-3" style="font-size: 0.95rem;">Choose time slot:</h6>
                     <div class="slot-grid" id="slotGridSelection">
